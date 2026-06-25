@@ -93,7 +93,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-white drop-shadow-lg leading-[1.1]">
               Solve, Play, and <span className="text-accent">Win Big.</span>
             </h1>
-            <p className="text-lg text-primary-foreground/90 leading-relaxed font-medium drop-shadow-md">
+            <p className="text-lg text-white/90 leading-relaxed font-medium drop-shadow-md">
               Join thousands of players every day to solve exclusive crossword puzzles and earn a chance to win incredible daily prizes.
             </p>
           </div>

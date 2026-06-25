@@ -1,35 +1,26 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollText } from "lucide-react";
 
 export function Rules() {
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ScrollText className="h-5 w-5 text-primary" />
-          Giveaway Rules
-        </CardTitle>
-        <CardDescription>Please read the rules before entering.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ul className="list-disc pl-5 space-y-3 text-muted-foreground">
-          <li>
-            <strong>Eligibility:</strong> Open to all legal residents who are 18 years of age or older at the time of entry.
-          </li>
-          <li>
-            <strong>Entry Limit:</strong> STRICTLY ONE ENTRY PER PERSON PER DAY. You may enter by solving the daily crossword puzzle or by using the alternate entry method.
-          </li>
-          <li>
-            <strong>Prize:</strong> The prize for each day is displayed in the Prize Information section. Prizes are non-transferable and no cash equivalent is offered.
-          </li>
-          <li>
-            <strong>Winner Selection:</strong> Winners are selected randomly from all eligible entries received that day.
-          </li>
-          <li>
-            <strong>Notification:</strong> Winners will be notified via the email address provided during entry.
-          </li>
-        </ul>
-      </CardContent>
-    </Card>
+    <div className="w-full space-y-6 text-slate-700 leading-relaxed text-sm md:text-base p-4">
+      <p>
+        Use the clues to fill the grid with the correct solution words.
+        Tap a clue from the scrollable clue lists (tablet and desktop),
+        press the &lt; and &gt; buttons (mobile), or select a cell within the
+        grid to highlight a clue. Type in your solution answer.
+      </p>
+
+      <p>
+        To erase a letter during entry of a solution, simply tap the
+        delete button to erase last letter entry, and repeat to continue
+        to delete each letter previously entered.
+      </p>
+
+      <p>
+        To amend a letter, select the cell and over-type with your
+        replacement letter. At any time during play, you can select the
+        Check button to reveal incorrect inputs.
+      </p>
+    </div>
   );
 }

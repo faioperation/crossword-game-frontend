@@ -48,7 +48,7 @@ export default function LoginPage() {
   return (
     <div className="w-full space-y-8">
       <div className="space-y-2 text-center md:text-left">
-        <h2 className="text-3xl font-bold tracking-tight text-primary">Welcome back</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-[#1F2937]">Welcome back</h2>
         <p className="text-muted-foreground">Enter your credentials to access your account</p>
       </div>
 
