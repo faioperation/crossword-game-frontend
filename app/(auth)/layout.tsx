@@ -52,12 +52,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         {/* Branding Overlay Side - Animated Position */}
         <div 
           className={cn(
-            "hidden md:flex absolute top-0 left-0 w-1/2 h-full flex-col bg-primary text-primary-foreground p-10 lg:p-16 justify-between overflow-hidden z-20 transition-transform duration-700 ease-in-out pointer-events-none",
+            "hidden md:flex absolute top-0 left-0 w-1/2 h-full flex-col bg-[#1F2937] text-white p-10 lg:p-16 justify-between overflow-hidden z-20 transition-transform duration-700 ease-in-out pointer-events-none",
             isLogin ? "translate-x-full" : "translate-x-0"
           )}
         >
           {/* Base Dark Color */}
-          <div className="absolute inset-0 bg-primary"></div>
+          <div className="absolute inset-0 bg-[#1F2937]"></div>
           
           {/* Beautiful Gold/Accent Glowing Orbs */}
           <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-accent/30 blur-[120px] mix-blend-screen"></div>
@@ -73,7 +73,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="absolute inset-0 bg-black/50 pointer-events-none"></div>
           
           {/* Bottom Gradient for text readability */}
-          <div className="absolute bottom-0 left-0 right-0 h-2/3 bg-gradient-to-t from-primary/90 to-transparent"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-2/3 bg-gradient-to-t from-[#1F2937]/90 to-transparent"></div>
 
           {/* Top Logo */}
           <div className="relative z-10 flex items-center pointer-events-auto">
