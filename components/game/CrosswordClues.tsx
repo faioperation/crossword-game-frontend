@@ -25,12 +25,12 @@ export function CrosswordClues({ clues, focusedCell, direction, filterDirection,
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full h-full lg:max-h-[700px] overflow-y-auto pr-2">
-      <div className="bg-slate-900 rounded-t-xl rounded-b-md shadow-lg border border-slate-800 overflow-hidden">
-        <div className="bg-black text-white px-4 py-2 font-bold tracking-wider text-sm uppercase">
+    <div className="flex flex-col w-full h-full">
+      <div className="bg-slate-900 rounded-t-xl rounded-b-md shadow-lg border border-slate-800 overflow-hidden flex flex-col max-h-[300px] lg:max-h-[600px]">
+        <div className="bg-black text-white px-4 py-2 font-bold tracking-wider text-sm uppercase flex-shrink-0">
           {filterDirection}
         </div>
-        <ul className="bg-white p-4 space-y-1">
+        <ul className="bg-white p-4 space-y-1 overflow-y-auto flex-1 custom-scrollbar">
           {filteredClues.map(clue => (
             <li 
               key={`${filterDirection}-${clue.number}`} 

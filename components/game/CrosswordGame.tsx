@@ -62,11 +62,11 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
     let endCol = focusedCell.col;
 
     if (direction === 'across') {
-      while (startCol > 0 && !grid[startRow][startCol - 1].isBlack) startCol--;
-      while (endCol < grid[0].length - 1 && !grid[endRow][endCol + 1].isBlack) endCol++;
+      while (startCol > 0 && !grid[startRow]?.[startCol - 1]?.isBlack) startCol--;
+      while (endCol < grid[0].length - 1 && !grid[endRow]?.[endCol + 1]?.isBlack) endCol++;
     } else {
-      while (startRow > 0 && !grid[startRow - 1][startCol].isBlack) startRow--;
-      while (endRow < grid.length - 1 && !grid[endRow + 1][endCol].isBlack) endRow++;
+      while (startRow > 0 && !grid[startRow - 1]?.[startCol]?.isBlack) startRow--;
+      while (endRow < grid.length - 1 && !grid[endRow + 1]?.[endCol]?.isBlack) endRow++;
     }
     return { startRow, startCol, endRow, endCol };
   };

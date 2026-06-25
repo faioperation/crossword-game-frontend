@@ -50,6 +50,9 @@ export function CrosswordGrid({ grid, focusedCell, direction, showErrors, isWon,
           {row.map((cell, colIndex) => {
             const isFocused = focusedCell?.row === rowIndex && focusedCell?.col === colIndex;
             const isHighlighted = isCellInActiveWord(rowIndex, colIndex);
+            const hasValue = cell.value !== "";
+            const isWrong = showErrors && hasValue && cell.value.toUpperCase() !== cell.answer.toUpperCase();
+            const isCorrect = showErrors && hasValue && cell.value.toUpperCase() === cell.answer.toUpperCase();
             
             return (
               <div 
@@ -57,8 +60,10 @@ export function CrosswordGrid({ grid, focusedCell, direction, showErrors, isWon,
                 className={cn(
                   "relative aspect-square w-full h-full flex items-center justify-center transition-colors duration-200",
                   cell.isBlack ? "bg-slate-900" : "bg-white",
-                  isHighlighted && !isFocused && !cell.isBlack && "bg-[#a2d2d5]",
-                  isFocused && !cell.isBlack && "bg-[#4ca4ab]"
+                  isHighlighted && !isFocused && !cell.isBlack && !showErrors && "bg-[#a2d2d5]",
+                  isFocused && !cell.isBlack && !showErrors && "bg-[#4ca4ab]",
+                  isWrong && "bg-red-100",
+                  isCorrect && "bg-green-50"
                 )}
                 onClick={() => !cell.isBlack && !isWon && onFocus(rowIndex, colIndex)}
               >
@@ -76,8 +81,8 @@ export function CrosswordGrid({ grid, focusedCell, direction, showErrors, isWon,
                       disabled={isWon}
                       value={cell.value}
                       className={cn(
-                        "w-full h-full text-center text-lg sm:text-2xl md:text-3xl font-bold uppercase bg-transparent outline-none cursor-pointer caret-transparent",
-                        showErrors && cell.value !== "" && cell.value !== cell.answer ? "text-red-500" : "text-slate-900"
+                        "w-full h-full text-center text-sm sm:text-base md:text-lg lg:text-xl font-bold uppercase bg-transparent outline-none cursor-pointer caret-transparent",
+                        isWrong ? "text-red-600" : isCorrect ? "text-green-600" : "text-slate-900"
                       )}
                       onChange={(e) => {
                         const val = e.target.value.slice(-1); 
