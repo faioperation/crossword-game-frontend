@@ -1,9 +1,9 @@
 "use client";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { UserCircle, LogOut } from "lucide-react";
-import Link from "next/link";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +16,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function TopNavbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  
+  const handleLogout = () => {
+    toast.loading("Logging out securely...", { id: "logout-top" });
+    setTimeout(() => {
+      toast.dismiss("logout-top");
+      toast.success("Logged out successfully!");
+      router.push("/login");
+    }, 1200);
+  };
   
   // Basic title formatting based on the route
   const getTitle = () => {
@@ -56,11 +66,9 @@ export function TopNavbar() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild className="text-red-600 focus:text-white focus:bg-red-400 focus:text-red-700 cursor-pointer">
-              <Link href="/" className="flex w-full items-center">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-              </Link>
+            <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-white focus:bg-red-400 focus:text-red-700 cursor-pointer flex w-full items-center">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Logout</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

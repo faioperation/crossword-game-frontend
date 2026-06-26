@@ -141,15 +141,14 @@ export default function CreatePuzzlePage() {
                 </select>
               </div>
 
-              <div 
-                className="grid bg-slate-900 border-2 border-slate-900 mx-auto"
-                style={{ 
-                  gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
-                  gap: '2px',
-                  width: `${size * 80}px`,
-                  height: `${size * 80}px`
-                }}
-              >
+              <div className="w-full max-w-[500px] aspect-square mx-auto">
+                <div 
+                  className="grid bg-slate-900 border-2 border-slate-900 w-full h-full"
+                  style={{ 
+                    gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
+                    gap: '2px'
+                  }}
+                >
                 {grid.map((row, r) => (
                   row.map((cell, c) => (
                     <div 
@@ -159,7 +158,7 @@ export default function CreatePuzzlePage() {
                       onContextMenu={(e) => { e.preventDefault(); toggleBlackCell(r, c); }}
                     >
                       {!cell.isBlack && cell.clueNum && (
-                        <span className="absolute top-1.5 left-2 text-sm font-bold text-slate-600 pointer-events-none select-none z-10 leading-none">
+                        <span className="absolute top-1 left-1.5 sm:top-1.5 sm:left-2 text-[10px] sm:text-sm font-bold text-slate-600 pointer-events-none select-none z-10 leading-none">
                           {cell.clueNum}
                         </span>
                       )}
@@ -167,7 +166,7 @@ export default function CreatePuzzlePage() {
                         <input
                           type="text"
                           maxLength={1}
-                          className="w-full h-full text-center text-4xl font-bold uppercase focus:outline-none focus:bg-blue-50 caret-transparent cursor-pointer"
+                          className="w-full h-full text-center text-2xl sm:text-4xl font-bold uppercase focus:outline-none focus:bg-blue-50 caret-transparent cursor-pointer"
                           value={cell.letter}
                           onChange={(e) => setCellLetter(r, c, e.target.value.toUpperCase())}
                           onKeyDown={(e) => handleKeyDown(e, r, c)}
@@ -178,8 +177,9 @@ export default function CreatePuzzlePage() {
                     </div>
                   ))
                 ))}
+                </div>
               </div>
-              <p className="text-xs text-slate-500 mt-4">
+              <p className="text-xs sm:text-sm text-slate-500 mt-6 text-center">
                 Words and numbers are automatically generated based on the letters and black cells placed here.
               </p>
             </CardContent>
@@ -270,14 +270,12 @@ export default function CreatePuzzlePage() {
             </CardHeader>
             <CardContent className="p-6">
               
-              <div className="flex flex-col items-center mb-6">
+              <div className="w-full max-w-[250px] mx-auto aspect-square mb-6">
                 <div 
-                  className="grid bg-slate-900 border border-slate-900"
+                  className="grid bg-slate-900 border border-slate-900 w-full h-full"
                   style={{ 
                     gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
-                    gap: '1px',
-                    width: `${size * 35}px`,
-                    height: `${size * 35}px`
+                    gap: '1px'
                   }}
                 >
                   {grid.map((row, r) => (

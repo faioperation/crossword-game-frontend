@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Filter, Edit, Eye, Archive, Download, CalendarDays } from "lucide-react";
+import { Plus, Search, Filter, Edit, Eye, Archive, Download, CalendarDays, Puzzle, CheckCircle2 } from "lucide-react";
 
 export default function PuzzleManagementPage() {
   const router = useRouter();
@@ -18,7 +18,6 @@ export default function PuzzleManagementPage() {
     { id: "PZ-001", title: "Daily Mini Crossword", date: "2026-06-26", status: "Published", difficulty: "Easy", cluesCount: 12 },
     { id: "PZ-002", title: "Weekend Special", date: "2026-06-27", status: "Draft", difficulty: "Medium", cluesCount: 15 },
     { id: "PZ-003", title: "Flash Puzzle", date: "2026-06-28", status: "Draft", difficulty: "Hard", cluesCount: 18 },
-    { id: "PZ-004", title: "Archive Puzzle 1", date: "2026-06-01", status: "Archived", difficulty: "Easy", cluesCount: 10 },
   ];
 
   const filteredPuzzles = dummyPuzzles.filter(p => {
@@ -49,31 +48,45 @@ export default function PuzzleManagementPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-slate-200 shadow-sm bg-indigo-50/50">
-          <CardContent className="p-6">
-            <p className="text-sm font-medium text-slate-500">Total Puzzles</p>
-            <p className="text-3xl font-bold text-slate-900 mt-2">{dummyPuzzles.length}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-slate-200 shadow-sm bg-emerald-50/50">
-          <CardContent className="p-6">
-            <p className="text-sm font-medium text-slate-500">Published</p>
-            <p className="text-3xl font-bold text-emerald-700 mt-2">{dummyPuzzles.filter(p => p.status === "Published").length}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-slate-200 shadow-sm bg-amber-50/50">
-          <CardContent className="p-6">
-            <p className="text-sm font-medium text-slate-500">Drafts</p>
-            <p className="text-3xl font-bold text-amber-700 mt-2">{dummyPuzzles.filter(p => p.status === "Draft").length}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-slate-200 shadow-sm bg-slate-100">
-          <CardContent className="p-6">
-            <p className="text-sm font-medium text-slate-500">Archived</p>
-            <p className="text-3xl font-bold text-slate-700 mt-2">{dummyPuzzles.filter(p => p.status === "Archived").length}</p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 p-6 shadow-xl transition-transform hover:-translate-y-1 hover:shadow-2xl">
+          <div className="absolute right-0 top-0 opacity-10 blur-xl transform translate-x-1/3 -translate-y-1/3">
+            <Puzzle className="h-24 w-24 text-white" />
+          </div>
+          <div className="relative z-10 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-white/80 uppercase tracking-wider">Total Puzzles</span>
+              <Puzzle className="h-5 w-5 text-white/90" />
+            </div>
+            <div className="text-4xl font-black text-white">{dummyPuzzles.length}</div>
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 p-6 shadow-xl transition-transform hover:-translate-y-1 hover:shadow-2xl">
+          <div className="absolute right-0 top-0 opacity-10 blur-xl transform translate-x-1/3 -translate-y-1/3">
+            <CheckCircle2 className="h-24 w-24 text-white" />
+          </div>
+          <div className="relative z-10 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-white/80 uppercase tracking-wider">Published</span>
+              <CheckCircle2 className="h-5 w-5 text-white/90" />
+            </div>
+            <div className="text-4xl font-black text-white">{dummyPuzzles.filter(p => p.status === "Published").length}</div>
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 p-6 shadow-xl transition-transform hover:-translate-y-1 hover:shadow-2xl">
+          <div className="absolute right-0 top-0 opacity-10 blur-xl transform translate-x-1/3 -translate-y-1/3">
+            <Edit className="h-24 w-24 text-white" />
+          </div>
+          <div className="relative z-10 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-white/80 uppercase tracking-wider">Drafts</span>
+              <Edit className="h-5 w-5 text-white/90" />
+            </div>
+            <div className="text-4xl font-black text-white">{dummyPuzzles.filter(p => p.status === "Draft").length}</div>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -95,7 +108,6 @@ export default function PuzzleManagementPage() {
             <option value="All">All Status</option>
             <option value="Published">Published</option>
             <option value="Draft">Drafts</option>
-            <option value="Archived">Archived</option>
           </select>
           <Button variant="outline" className="border-slate-200 text-slate-700 bg-slate-50 hover:bg-slate-100 h-11">
             <CalendarDays className="h-4 w-4 mr-2" /> Date
@@ -104,7 +116,7 @@ export default function PuzzleManagementPage() {
       </div>
 
       <Card className="border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <Table>
             <TableHeader className="bg-slate-50/50">
               <TableRow>
@@ -144,9 +156,6 @@ export default function PuzzleManagementPage() {
                         <Button variant="ghost" size="icon" className="text-slate-500 hover:text-emerald-600 hover:bg-emerald-50" title="Edit" onClick={() => router.push("/admin/puzzle-management/create")}>
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-slate-500 hover:text-amber-600 hover:bg-amber-50" title="Archive">
-                          <Archive className="h-4 w-4" />
-                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -154,6 +163,47 @@ export default function PuzzleManagementPage() {
               )}
             </TableBody>
           </Table>
+        </div>
+        
+        {/* Mobile Cards View */}
+        <div className="md:hidden flex flex-col gap-4 p-4">
+          {filteredPuzzles.length === 0 ? (
+            <div className="text-center py-8 text-slate-500">No puzzles found matching your criteria.</div>
+          ) : (
+            filteredPuzzles.map((puzzle) => (
+              <div key={puzzle.id} className="flex flex-col gap-3 p-4 border border-slate-200 rounded-lg bg-slate-50">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="font-semibold text-slate-800 text-base block">{puzzle.title}</span>
+                    <span className="text-xs text-slate-500 font-mono mt-0.5 block">{puzzle.id}</span>
+                  </div>
+                  <div>{getStatusBadge(puzzle.status)}</div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm mt-1">
+                  <div>
+                    <span className="text-slate-500 block text-xs font-medium">Difficulty</span>
+                    <span className="font-semibold text-slate-700">{puzzle.difficulty}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block text-xs font-medium">Total Clues</span>
+                    <span className="text-slate-700">{puzzle.cluesCount}</span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-slate-500 block text-xs font-medium">Publish Date</span>
+                    <span className="text-slate-700">{puzzle.date}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 mt-2">
+                  <Button variant="outline" size="sm" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 flex-1">
+                    <Eye className="h-4 w-4 mr-2" /> Preview
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 flex-1" onClick={() => router.push("/admin/puzzle-management/create")}>
+                    <Edit className="h-4 w-4 mr-2" /> Edit
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
         <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between text-base text-slate-500 gap-4">
           <div>Showing {filteredPuzzles.length} puzzles</div>

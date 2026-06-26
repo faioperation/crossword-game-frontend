@@ -102,7 +102,7 @@ export default function WinnerHistoryPage() {
 
       {/* History Table */}
       <Card className="border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <Table>
             <TableHeader className="bg-slate-50/50">
               <TableRow>
@@ -147,6 +147,46 @@ export default function WinnerHistoryPage() {
           </Table>
         </div>
         
+        {/* Mobile Cards View */}
+        <div className="md:hidden flex flex-col gap-4 p-4">
+          {filteredHistory.map((winner) => (
+            <div key={winner.id} className="flex flex-col gap-3 p-4 border border-slate-200 rounded-lg bg-slate-50">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="font-semibold text-slate-800 text-base block">{winner.name}</span>
+                  <span className="text-xs text-slate-500 block">{winner.email}</span>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  {getStatusBadge(winner.status)}
+                  <Badge variant="outline" className={winner.type === 'Puzzle' ? 'text-blue-600 bg-blue-50' : 'text-purple-600 bg-purple-50'}>
+                    {winner.type}
+                  </Badge>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm mt-1 pt-3 border-t border-slate-200">
+                <div>
+                  <span className="text-slate-500 block text-xs font-medium">Winner Date</span>
+                  <span className="font-semibold text-slate-700">{winner.winnerDate}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-xs font-medium">Selection</span>
+                  <span className="text-slate-700">{getMethodBadge(winner.method)}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-end pt-3 border-t border-slate-200 mt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 w-full"
+                  onClick={() => setSelectedWinner(winner)}
+                >
+                  <Eye className="h-4 w-4 mr-2" /> View Details
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+        
         {/* Pagination */}
         <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between text-base text-slate-500 gap-4">
           <div>Showing {filteredHistory.length} winners</div>
@@ -159,7 +199,7 @@ export default function WinnerHistoryPage() {
 
       {/* Winner Details Modal */}
       <Dialog open={!!selectedWinner} onOpenChange={(open) => !open && setSelectedWinner(null)}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg w-[95vw] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-slate-900">Winner Details</DialogTitle>
             <DialogDescription>
@@ -168,7 +208,7 @@ export default function WinnerHistoryPage() {
           </DialogHeader>
           
           {selectedWinner && (
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-xl border border-slate-100">
+            <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-6 bg-slate-50 p-4 sm:p-6 rounded-xl border border-slate-100">
               <div className="space-y-1">
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Full Name</span>
                 <p className="text-lg font-bold text-slate-900">{selectedWinner.name}</p>

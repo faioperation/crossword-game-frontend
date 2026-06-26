@@ -72,7 +72,7 @@ export default function EntriesPage() {
       </div>
 
       {/* 4 Stat Cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card, i) => (
           <div
             key={i}
@@ -119,7 +119,7 @@ export default function EntriesPage() {
 
       {/* Data Table */}
       <Card className="border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <Table>
             <TableHeader className="bg-slate-50/50">
               <TableRow>
@@ -149,6 +149,35 @@ export default function EntriesPage() {
               ))}
             </TableBody>
           </Table>
+        </div>
+        
+        {/* Mobile Cards View */}
+        <div className="md:hidden flex flex-col gap-4 p-4">
+          {filteredEntries.map((entry) => (
+            <div key={entry.id} className="flex flex-col gap-3 p-4 border border-slate-200 rounded-lg bg-slate-50">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="font-semibold text-slate-800 text-base block">{entry.name}</span>
+                  <span className="text-xs text-slate-500 block">{entry.email}</span>
+                  <span className="text-xs text-slate-400 font-mono mt-0.5 block">{entry.id}</span>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  {getStatusBadge(entry.status)}
+                  {getTypeBadge(entry.type)}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm mt-1 pt-3 border-t border-slate-200">
+                <div>
+                  <span className="text-slate-500 block text-xs font-medium">Date</span>
+                  <span className="font-semibold text-slate-700">{entry.date}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-xs font-medium">Solve Time</span>
+                  <span className="text-slate-700 font-mono">{entry.time}</span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
         
         {/* Pagination */}

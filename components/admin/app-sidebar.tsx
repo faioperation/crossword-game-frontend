@@ -2,7 +2,8 @@
 
 import { Home, Puzzle, FileText, Trophy, BarChart3, Settings, LogOut, Dices, History } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import {
   Sidebar,
@@ -35,6 +36,16 @@ const systemNavItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    toast.loading("Logging out securely...", { id: "logout" });
+    setTimeout(() => {
+      toast.dismiss("logout");
+      toast.success("Logged out successfully!");
+      router.push("/login");
+    }, 1200);
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -109,10 +120,10 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="py-5">
-              <Link href="/" className="text-red-500 hover:text-red-600 hover:bg-red-50">
+              <button onClick={handleLogout} className="text-red-500 hover:text-red-600 hover:bg-red-50 w-full flex items-center justify-start text-left cursor-pointer">
                 <LogOut className="h-5 w-5" />
                 <span className="text-base font-medium">Logout</span>
-              </Link>
+              </button>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

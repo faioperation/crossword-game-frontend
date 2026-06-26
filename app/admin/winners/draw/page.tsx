@@ -49,10 +49,10 @@ export default function DrawWinnerPage() {
   );
 
   const statCards = [
-    { title: "Today's Entries", value: "290", icon: CalendarDays, bg: "bg-blue-100", color: "text-blue-600" },
-    { title: "Eligible Entries", value: "245", icon: Users, bg: "bg-emerald-100", color: "text-emerald-600" },
-    { title: "Current Winner", value: "Pending", icon: Trophy, bg: "bg-amber-100", color: "text-amber-600" },
-    { title: "Last Draw Date", value: "Yesterday", icon: Clock, bg: "bg-purple-100", color: "text-purple-600" },
+    { title: "Today's Entries", value: "290", icon: CalendarDays, gradient: "from-blue-500 to-indigo-600" },
+    { title: "Eligible Entries", value: "245", icon: Users, gradient: "from-emerald-400 to-teal-600" },
+    { title: "Current Winner", value: "Pending", icon: Trophy, gradient: "from-amber-400 to-orange-500" },
+    { title: "Last Draw Date", value: "Yesterday", icon: Clock, gradient: "from-purple-500 to-fuchsia-600" },
   ];
 
   // Lottery Animation Logic
@@ -102,19 +102,25 @@ export default function DrawWinnerPage() {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card, i) => (
-          <Card key={i} className="border-slate-200 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
-            <CardContent className="p-5 flex items-center gap-4">
-              <div className={`p-3 rounded-xl ${card.bg}`}>
-                <card.icon className={`h-6 w-6 ${card.color}`} />
+          <div
+            key={i}
+            className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${card.gradient} p-6 shadow-xl transition-transform hover:-translate-y-1 hover:shadow-2xl`}
+          >
+            <div className="absolute right-0 top-0 opacity-10 blur-xl transform translate-x-1/3 -translate-y-1/3">
+              <card.icon className="h-24 w-24 text-white" />
+            </div>
+            <div className="relative z-10 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+                  {card.title}
+                </span>
+                <card.icon className="h-5 w-5 text-white/90" />
               </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-500">{card.title}</p>
-                <h3 className="text-2xl font-bold text-slate-900">{card.value}</h3>
-              </div>
-            </CardContent>
-          </Card>
+              <div className="text-4xl font-black text-white">{card.value}</div>
+            </div>
+          </div>
         ))}
       </div>
 
@@ -234,7 +240,7 @@ export default function DrawWinnerPage() {
         </div>
 
         <Card className="border-slate-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="hidden md:block overflow-x-auto">
             <Table>
               <TableHeader className="bg-slate-50/50">
                 <TableRow>
@@ -277,6 +283,43 @@ export default function DrawWinnerPage() {
               </TableBody>
             </Table>
           </div>
+          
+          {/* Mobile Cards View */}
+          <div className="md:hidden flex flex-col gap-4 p-4">
+            {filteredEligible.map((entry) => (
+              <div key={entry.id} className="flex flex-col gap-3 p-4 border border-slate-200 rounded-lg bg-slate-50">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="font-semibold text-slate-800 text-base block">{entry.name}</span>
+                    <span className="text-xs text-slate-500 block">{entry.email}</span>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className="text-xs text-slate-400 font-mono mt-0.5 block">{entry.id}</span>
+                    <Badge variant="outline" className={entry.type === 'Puzzle' ? 'text-blue-600 bg-blue-50' : 'text-purple-600 bg-purple-50'}>
+                      {entry.type}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm mt-1 pt-3 border-t border-slate-200">
+                  <div>
+                    <span className="text-slate-500 block text-xs font-medium">Solve Time</span>
+                    <span className="font-mono text-slate-700">{entry.time}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-end pt-3 border-t border-slate-200 mt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 w-full"
+                    onClick={() => handleManualSelect(entry)}
+                    disabled={selectedWinner !== null || isDrawing}
+                  >
+                    <Hand className="h-4 w-4 mr-2" /> Manual Select
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
           <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-slate-500 text-sm">
             <div>Showing {filteredEligible.length} eligible entries</div>
             <div className="flex gap-2">
@@ -289,7 +332,7 @@ export default function DrawWinnerPage() {
 
       {/* Confirmation Modal */}
       <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md w-[95vw] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">Confirm Winner</DialogTitle>
             <DialogDescription>
