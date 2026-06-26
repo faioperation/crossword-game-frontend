@@ -65,7 +65,6 @@ export function CrosswordGrid({ grid, focusedCell, direction, showErrors, isWon,
                   isWrong && "bg-red-100",
                   isCorrect && "bg-green-50"
                 )}
-                onClick={() => !cell.isBlack && !isWon && onFocus(rowIndex, colIndex)}
               >
                 {!cell.isBlack && (
                   <>
@@ -77,18 +76,23 @@ export function CrosswordGrid({ grid, focusedCell, direction, showErrors, isWon,
                     <input
                       id={`cell-${rowIndex}-${colIndex}`}
                       type="text"
-                      maxLength={1}
                       disabled={isWon}
                       value={cell.value}
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="characters"
+                      spellCheck="false"
                       className={cn(
                         "w-full h-full text-center text-sm sm:text-base md:text-lg lg:text-xl font-bold uppercase bg-transparent outline-none cursor-pointer caret-transparent",
                         isWrong ? "text-red-600" : isCorrect ? "text-green-600" : "text-slate-900"
                       )}
                       onChange={(e) => {
                         const val = e.target.value.slice(-1); 
-                        onChange(rowIndex, colIndex, val);
-                        if (val !== "") {
-                          onNavigate(rowIndex, colIndex, 'next');
+                        if (/^[a-zA-Z]$/.test(val) || val === "") {
+                          onChange(rowIndex, colIndex, val);
+                          if (val !== "") {
+                            onNavigate(rowIndex, colIndex, 'next');
+                          }
                         }
                       }}
                       onKeyDown={(e) => {
@@ -100,9 +104,6 @@ export function CrosswordGrid({ grid, focusedCell, direction, showErrors, isWon,
                           }
                         } else if (e.key === "Delete") {
                           onChange(rowIndex, colIndex, "");
-                        } else if (e.key === " ") {
-                          e.preventDefault();
-                          onFocus(rowIndex, colIndex); // This toggles direction
                         } else if (e.key === "Tab") {
                           e.preventDefault();
                           onNavigate(rowIndex, colIndex, e.shiftKey ? 'prev-clue' : 'next-clue');
@@ -118,13 +119,18 @@ export function CrosswordGrid({ grid, focusedCell, direction, showErrors, isWon,
                         } else if (e.key === "ArrowRight") {
                           e.preventDefault();
                           onNavigate(rowIndex, colIndex, 'right');
-                        } else if (/^[a-zA-Z]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
-                          e.preventDefault();
-                          onChange(rowIndex, colIndex, e.key);
-                          onNavigate(rowIndex, colIndex, 'next');
                         }
                       }}
-                      onFocus={() => !isWon && onFocus(rowIndex, colIndex)}
+                      onClick={() => {
+                        if (!isWon && isFocused) {
+                          onFocus(rowIndex, colIndex);
+                        }
+                      }}
+                      onFocus={() => {
+                        if (!isWon && !isFocused) {
+                          onFocus(rowIndex, colIndex);
+                        }
+                      }}
                     />
                   </>
                 )}

@@ -26,6 +26,14 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
   const [grid, setGrid] = useState<PuzzleCell[][]>(
     puzzle.grid.map(row => row.map(cell => ({ ...cell, value: "" })))
   );
+
+  useEffect(() => {
+    setGrid(puzzle.grid.map(row => row.map(cell => ({ ...cell, value: "" }))));
+    setFocusedCell(null);
+    setHasStarted(false);
+    setIsWon(false);
+    setSeconds(0);
+  }, [puzzle]);
   
   const [focusedCell, setFocusedCell] = useState<{ row: number; col: number } | null>(null);
   const [direction, setDirection] = useState<'across' | 'down'>('across');
@@ -173,11 +181,17 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
     let newCol = col;
     
     if (dir === 'next') {
-      if (direction === 'across') newCol += 1;
-      else newRow += 1;
+      if (direction === 'across') {
+        if (wordBounds && newCol < wordBounds.endCol) newCol += 1;
+      } else {
+        if (wordBounds && newRow < wordBounds.endRow) newRow += 1;
+      }
     } else if (dir === 'prev') {
-      if (direction === 'across') newCol -= 1;
-      else newRow -= 1;
+      if (direction === 'across') {
+        if (wordBounds && newCol > wordBounds.startCol) newCol -= 1;
+      } else {
+        if (wordBounds && newRow > wordBounds.startRow) newRow -= 1;
+      }
     } else if (dir === 'up') newRow -= 1;
     else if (dir === 'down') newRow += 1;
     else if (dir === 'left') newCol -= 1;
