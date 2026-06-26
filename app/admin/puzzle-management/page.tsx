@@ -1,4 +1,7 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -17,7 +20,7 @@ export default function PuzzleManagementPage() {
           <h2 className="text-3xl font-bold tracking-tight">Puzzle Management</h2>
           <p className="text-muted-foreground">Manage your crossword puzzles here.</p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button onClick={() => toast.success("Opening puzzle creator...")} className="flex items-center gap-2">
           <Plus className="w-4 h-4" />
           Create Puzzle
         </Button>

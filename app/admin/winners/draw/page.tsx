@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { CalendarDays, Users, Trophy, Clock, Search, Filter, Dices, RefreshCw, CheckCircle, Hand } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 // Mock Data
 const eligibleEntries = [
@@ -41,6 +42,11 @@ export default function DrawWinnerPage() {
   const [selectedWinner, setSelectedWinner] = useState<typeof eligibleEntries[0] | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [selectionMethod, setSelectionMethod] = useState<"Random" | "Manual">("Random");
+
+  const filteredEligible = eligibleEntries.filter((entry) => 
+    entry.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    entry.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const statCards = [
     { title: "Today's Entries", value: "290", icon: CalendarDays, bg: "bg-blue-100", color: "text-blue-600" },
@@ -82,7 +88,7 @@ export default function DrawWinnerPage() {
   const confirmWinner = () => {
     setShowConfirmModal(false);
     // In a real app, API call to confirm winner goes here
-    alert(`Winner Confirmed: ${selectedWinner?.name}! Moving to Winner History.`);
+    toast.success(`Winner Confirmed: ${selectedWinner?.name}!`);
     setSelectedWinner(null);
   };
 
@@ -240,7 +246,7 @@ export default function DrawWinnerPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {eligibleEntries.map((entry) => (
+                {filteredEligible.map((entry) => (
                   <TableRow key={entry.id} className="hover:bg-slate-50">
                     <TableCell className="font-medium text-slate-900 py-4">{entry.id}</TableCell>
                     <TableCell className="py-4">
@@ -272,7 +278,7 @@ export default function DrawWinnerPage() {
             </Table>
           </div>
           <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-slate-500 text-sm">
-            <div>Showing 1 to 6 of 245 eligible entries</div>
+            <div>Showing {filteredEligible.length} eligible entries</div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" disabled className="bg-white">Previous</Button>
               <Button variant="outline" size="sm" className="bg-white">Next</Button>

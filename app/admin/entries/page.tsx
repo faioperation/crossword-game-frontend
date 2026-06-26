@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { exportTableToCSV } from "@/lib/export";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,6 +29,15 @@ const mockEntries = [
 
 export default function EntriesPage() {
   const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredEntries = mockEntries.filter((entry) => 
+    entry.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    entry.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleExport = () => {
+    exportTableToCSV(filteredEntries, "all-entries");
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -100,7 +110,7 @@ export default function EntriesPage() {
             <Filter className="h-5 w-5 mr-2" />
             Filters
           </Button>
-          <Button className="flex-1 sm:flex-none bg-slate-900 hover:bg-slate-800 text-white h-11 text-base">
+          <Button onClick={handleExport} className="flex-1 sm:flex-none bg-slate-900 hover:bg-slate-800 text-white h-11 text-base">
             <Download className="h-5 w-5 mr-2" />
             Export
           </Button>
@@ -122,7 +132,7 @@ export default function EntriesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockEntries.map((entry) => (
+              {filteredEntries.map((entry) => (
                 <TableRow key={entry.id} className="hover:bg-slate-50">
                   <TableCell className="font-medium text-slate-900 text-base py-4">{entry.id}</TableCell>
                   <TableCell className="py-4">
@@ -143,7 +153,7 @@ export default function EntriesPage() {
         
         {/* Pagination */}
         <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between text-base text-slate-500 gap-4">
-          <div>Showing 1 to 7 of 1,045 entries</div>
+          <div>Showing {filteredEntries.length} entries</div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" disabled className="bg-white h-9 px-4 text-base">Previous</Button>
             <Button variant="outline" size="sm" className="bg-white h-9 w-9 text-base">1</Button>

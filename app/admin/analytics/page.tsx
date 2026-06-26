@@ -1,5 +1,6 @@
 "use client";
 
+import { exportTableToCSV } from "@/lib/export";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, Users, MousePointerClick, Clock, Target, TrendingUp, MonitorSmartphone } from "lucide-react";
@@ -53,6 +54,10 @@ const deviceData = [
 const COLORS = ["#10b981", "#f59e0b", "#3b82f6", "#8b5cf6", "#ec4899"];
 
 export default function AnalyticsPage() {
+  const handleExport = () => {
+    exportTableToCSV(dailyEntriesData, "analytics-daily-entries");
+  };
+
   const summaryCards = [
     { title: "Total Users", value: "12.5k", icon: Users, color: "text-blue-500", bg: "bg-blue-50" },
     { title: "Avg. Engagement", value: "8.2m", icon: Clock, color: "text-emerald-500", bg: "bg-emerald-50" },
@@ -73,7 +78,7 @@ export default function AnalyticsPage() {
             Detailed performance metrics and user insights.
           </p>
         </div>
-        <Button className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800">
+        <Button onClick={handleExport} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800">
           <Download className="h-4 w-4" />
           Export Report
         </Button>

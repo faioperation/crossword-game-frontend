@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { exportTableToCSV } from "@/lib/export";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,6 +36,15 @@ export default function WinnerHistoryPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedWinner, setSelectedWinner] = useState<typeof historyEntries[0] | null>(null);
 
+  const filteredHistory = historyEntries.filter((winner) => 
+    winner.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    winner.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleExport = () => {
+    exportTableToCSV(filteredHistory, "winner-history");
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Claimed": return <Badge className="bg-blue-500 hover:bg-blue-600">Claimed</Badge>;
@@ -61,7 +71,7 @@ export default function WinnerHistoryPage() {
           <h2 className="text-3xl font-bold tracking-tight text-slate-900">Winner History</h2>
           <p className="text-slate-500 font-medium text-base mt-1">Review all previously confirmed winners.</p>
         </div>
-        <Button className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white">
+        <Button onClick={handleExport} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white">
           <Download className="h-4 w-4" />
           Export History
         </Button>
@@ -97,7 +107,6 @@ export default function WinnerHistoryPage() {
             <TableHeader className="bg-slate-50/50">
               <TableRow>
                 <TableHead className="font-semibold text-slate-600 py-4">Winner Name</TableHead>
-                <TableHead className="font-semibold text-slate-600 py-4">Prize</TableHead>
                 <TableHead className="font-semibold text-slate-600 py-4">Type</TableHead>
                 <TableHead className="font-semibold text-slate-600 py-4">Winner Date</TableHead>
                 <TableHead className="font-semibold text-slate-600 py-4">Selection</TableHead>
@@ -106,7 +115,7 @@ export default function WinnerHistoryPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {historyEntries.map((winner) => (
+              {filteredHistory.map((winner) => (
                 <TableRow key={winner.id} className="hover:bg-slate-50">
                   <TableCell className="py-4">
                     <div className="flex flex-col">
@@ -114,7 +123,6 @@ export default function WinnerHistoryPage() {
                       <span className="text-sm text-slate-500">{winner.email}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="py-4 font-medium text-slate-700">{winner.prize}</TableCell>
                   <TableCell className="py-4">
                     <Badge variant="outline" className={winner.type === 'Puzzle' ? 'text-blue-600 bg-blue-50' : 'text-purple-600 bg-purple-50'}>
                       {winner.type}
@@ -141,7 +149,7 @@ export default function WinnerHistoryPage() {
         
         {/* Pagination */}
         <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between text-base text-slate-500 gap-4">
-          <div>Showing 1 to 4 of 4 winners</div>
+          <div>Showing {filteredHistory.length} winners</div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" disabled className="bg-white h-9 px-4 text-base">Previous</Button>
             <Button variant="outline" size="sm" className="bg-white h-9 px-4 text-base">Next</Button>
