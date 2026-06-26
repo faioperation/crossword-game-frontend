@@ -25,7 +25,7 @@ export default function Home() {
             </div>
           </div>
           <div className="flex flex-col">
-            <h1 className="text-base sm:text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">
+            <h1 className="text-base font-semibold sm:text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">
               Heritage Stackers Daily Mini Crossword
             </h1>
             <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase hidden sm:block mt-[-2px]">

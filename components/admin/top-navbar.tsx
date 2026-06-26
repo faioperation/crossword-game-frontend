@@ -2,7 +2,17 @@
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
-import { UserCircle } from "lucide-react";
+import { UserCircle, LogOut } from "lucide-react";
+import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function TopNavbar() {
   const pathname = usePathname();
@@ -26,14 +36,34 @@ export function TopNavbar() {
         <h1 className="text-lg font-semibold text-slate-800">{getTitle()}</h1>
       </div>
       
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full cursor-pointer hover:bg-slate-200 transition-colors">
-          <div className="flex flex-col items-end">
-            <span className="text-xs font-medium leading-none">Admin User</span>
-            <span className="text-[10px] text-slate-500 mt-0.5">admin@example.com</span>
-          </div>
-          <UserCircle className="h-8 w-8 text-slate-600" />
-        </div>
+      <div className="flex items-center gap-4 mr-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="rounded-full outline-none  focus-visible:ring-2 focus-visible:ring-slate-400 transition-transform hover:scale-105">
+              <Avatar className="h-11 w-11 border-2 border-slate-300 ring-2 ring-slate-100 ring-offset-2 shadow-sm">
+                <AvatarImage src="https://i.pravatar.cc/150?u=admin" alt="Admin" />
+                <AvatarFallback className="bg-slate-100 text-slate-600 ">
+                  <UserCircle className="h-6 w-6" />
+                </AvatarFallback>
+              </Avatar>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 mt-2">
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">admin@example.com</p>
+                <p className="text-xs leading-none text-slate-500">Administrator</p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild className="text-red-600 focus:text-white focus:bg-red-400 focus:text-red-700 cursor-pointer">
+              <Link href="/" className="flex w-full items-center">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
