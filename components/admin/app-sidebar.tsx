@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Puzzle, FileText, Trophy, BarChart3, Settings, LogOut } from "lucide-react";
+import { Home, Puzzle, FileText, Trophy, BarChart3, Settings, LogOut, Dices, History } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -17,12 +17,19 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 
-const navItems = [
+const mainNavItems = [
   { title: "Dashboard", url: "/admin/dashboard", icon: Home },
   { title: "Puzzle Management", url: "/admin/puzzle-management", icon: Puzzle },
   { title: "Entries", url: "/admin/entries", icon: FileText },
-  { title: "Winner Management", url: "/admin/winners", icon: Trophy },
-  { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
+];
+
+const winnerNavItems = [
+  { title: "Draw Winner", url: "/admin/winners/draw", icon: Dices },
+  { title: "Winner History", url: "/admin/winners/history", icon: History },
+];
+
+const systemNavItems = [
+  // { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
   { title: "Settings", url: "/admin/settings", icon: Settings },
 ];
 
@@ -39,13 +46,32 @@ export function AppSidebar() {
           <span className="font-bold text-xl tracking-tight group-data-[collapsible=icon]:hidden">Admin Panel</span>
         </div>
       </SidebarHeader>
-      
+
       <SidebarContent>
+
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          {/* <SidebarGroupLabel>Main</SidebarGroupLabel> */}
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
-              {navItems.map((item) => (
+              {mainNavItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild isActive={pathname === item.url || pathname.startsWith(item.url + '/')} className="py-7">
+                    <Link href={item.url}>
+                      <item.icon className="h-5 w-5 text-xl" />
+                      <span className="text-xl font-medium">{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          {/* <SidebarGroupLabel>Winner Management</SidebarGroupLabel> */}
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-2">
+              {winnerNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={pathname === item.url} className="py-7">
                     <Link href={item.url}>
@@ -58,6 +84,25 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        <SidebarGroup>
+          {/* <SidebarGroupLabel>System</SidebarGroupLabel> */}
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-2">
+              {systemNavItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild isActive={pathname === item.url} className="py-7">
+                    <Link href={item.url}>
+                      <item.icon className="h-5 w-5 text-xl" />
+                      <span className="text-xl font-medium">{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t">
