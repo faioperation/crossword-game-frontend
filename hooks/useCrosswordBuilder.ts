@@ -41,7 +41,7 @@ export function useCrosswordBuilder(initialSize: number = 5) {
     if (!currentGrid || currentGrid.length === 0) return currentGrid;
 
     const newGrid = currentGrid.map((row) =>
-      row.map((cell) => ({ ...cell, clueNum: null }))
+      row.map((cell): Cell => ({ ...cell, clueNum: null }))
     );
 
     let currentNumber = 1;
