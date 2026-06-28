@@ -14,6 +14,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -42,11 +49,14 @@ export default function DrawWinnerPage() {
   const [selectedWinner, setSelectedWinner] = useState<typeof eligibleEntries[0] | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [selectionMethod, setSelectionMethod] = useState<"Random" | "Manual">("Random");
+  const [filterType, setFilterType] = useState("All");
 
-  const filteredEligible = eligibleEntries.filter((entry) => 
-    entry.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    entry.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEligible = eligibleEntries.filter((entry) => {
+    const matchesSearch = entry.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          entry.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = filterType === "All" ? true : entry.type === filterType;
+    return matchesSearch && matchesType;
+  });
 
   const statCards = [
     { title: "Today's Entries", value: "290", icon: CalendarDays, gradient: "from-blue-500 to-indigo-600" },
@@ -233,10 +243,16 @@ export default function DrawWinnerPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" className="w-full sm:w-auto border-slate-200 text-slate-700 bg-slate-50 hover:bg-slate-100 h-11">
-            <Filter className="h-5 w-5 mr-2" />
-            Filter Status
-          </Button>
+          <Select value={filterType} onValueChange={setFilterType}>
+            <SelectTrigger className="h-11 text-base bg-slate-50 border-slate-200 w-full sm:w-[160px]">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All Types</SelectItem>
+              <SelectItem value="Puzzle">Puzzle</SelectItem>
+              <SelectItem value="Alternate">Alternate</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <Card className="border-slate-200 shadow-sm overflow-hidden">

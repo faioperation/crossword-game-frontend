@@ -1,7 +1,7 @@
 import { WinnersList } from "@/components/public/WinnersList";
 import { Rules } from "@/components/public/Rules";
 import type { Winner } from "@/types";
-import { Gamepad2, ArrowRight } from "lucide-react";
+import { Gamepad2, ArrowRight, Gift } from "lucide-react";
 import { CrosswordGame } from "@/components/game/CrosswordGame";
 import { mockPuzzle } from "@/lib/puzzle-data";
 import Link from "next/link";
@@ -43,6 +43,36 @@ export default function Home() {
       
       <main className="flex-1 container mx-auto max-w-7xl px-4 py-8 space-y-16">
         
+        {/* Today's Prize Banner */}
+        <section className="w-full">
+          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 sm:p-10 text-white shadow-2xl border border-slate-700/50 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-[#D4AF37] opacity-10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-48 h-48 bg-green-400 opacity-10 rounded-full blur-2xl"></div>
+            
+            <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-950/50 rounded-full text-slate-300 text-xs sm:text-sm font-bold tracking-widest uppercase mb-3 border border-slate-700/50">
+                <Gift className="w-4 h-4 text-[#D4AF37]" />
+                Today's Featured Prize
+              </div>
+              <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#FFE87C] via-white to-[#D4AF37]">
+                1oz Silver Eagle Coin
+              </h2>
+              <p className="text-slate-300 font-medium max-w-lg text-sm sm:text-base">
+                Solve today's mini crossword and submit your entry for a chance to win this beautiful, authentic silver coin. A new winner is chosen daily!
+              </p>
+            </div>
+
+            <div className="relative z-10 flex-shrink-0 mt-4 md:mt-0">
+              <div className="bg-gradient-to-b from-[#FFE87C] to-[#D4AF37] p-1 rounded-2xl shadow-xl transform rotate-3 hover:rotate-0 transition duration-300">
+                <div className="bg-slate-900 rounded-xl px-8 py-6 flex flex-col items-center justify-center border border-[#D4AF37]/30">
+                  <span className="text-[#D4AF37] font-bold tracking-widest text-xs uppercase mb-1">Est. Value</span>
+                  <span className="text-4xl font-black text-white">$45</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Game Engine Section */}
         <section className="w-full">
           <CrosswordGame puzzle={mockPuzzle} />

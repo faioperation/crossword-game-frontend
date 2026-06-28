@@ -19,6 +19,7 @@ export default function CreatePuzzlePage() {
   const [date, setDate] = useState("");
   const [difficulty, setDifficulty] = useState("Easy");
   const [status, setStatus] = useState("Draft");
+  const [prize, setPrize] = useState("");
 
   // Validation State
   const [errors, setErrors] = useState<string[]>([]);
@@ -118,6 +119,10 @@ export default function CreatePuzzlePage() {
                   <option>Draft</option>
                   <option>Published</option>
                 </select>
+              </div>
+              <div className="flex flex-col gap-3">
+                <label className="text-sm font-semibold text-slate-700">Daily Prize</label>
+                <Input value={prize} onChange={e => setPrize(e.target.value)} placeholder="e.g. Silver Eagle" className="bg-slate-50 border-slate-200" />
               </div>
             </CardContent>
           </Card>

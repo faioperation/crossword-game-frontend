@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Puzzle, FileText, Trophy, BarChart3, Settings, LogOut, Dices, History } from "lucide-react";
+import { Home, Puzzle, FileText, Trophy, BarChart3, Settings, LogOut, Dices, History, Gift } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -27,6 +27,7 @@ const mainNavItems = [
 const winnerNavItems = [
   { title: "Draw Winner", url: "/admin/winners/draw", icon: Dices },
   { title: "Winner History", url: "/admin/winners/history", icon: History },
+  { title: "Prize Management", url: "/admin/prize-management", icon: Gift },
 ];
 
 const systemNavItems = [

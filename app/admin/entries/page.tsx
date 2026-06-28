@@ -13,6 +13,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, Download, CalendarDays, Puzzle, Layers, CheckCircle2 } from "lucide-react";
 
@@ -29,11 +36,17 @@ const mockEntries = [
 
 export default function EntriesPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+  const [filterStatus, setFilterStatus] = useState("All");
 
-  const filteredEntries = mockEntries.filter((entry) => 
-    entry.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    entry.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEntries = mockEntries.filter((entry) => {
+    const matchesSearch = entry.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          entry.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDate = filterDate ? entry.date === filterDate : true;
+    const matchesStatus = filterStatus === "All" ? true : entry.status === filterStatus;
+    
+    return matchesSearch && matchesDate && matchesStatus;
+  });
 
   const handleExport = () => {
     exportTableToCSV(filteredEntries, "all-entries");
@@ -105,12 +118,25 @@ export default function EntriesPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <Button variant="outline" className="flex-1 sm:flex-none border-slate-200 text-slate-700 bg-slate-50 hover:bg-slate-100 h-11 text-base">
-            <Filter className="h-5 w-5 mr-2" />
-            Filters
-          </Button>
-          <Button onClick={handleExport} className="flex-1 sm:flex-none bg-slate-900 hover:bg-slate-800 text-white h-11 text-base">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+          <Input 
+            type="date"
+            value={filterDate}
+            onChange={(e) => setFilterDate(e.target.value)}
+            className="h-11 text-base bg-slate-50 border-slate-200 w-full sm:w-[160px]"
+          />
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="h-11 text-base bg-slate-50 border-slate-200 w-full sm:w-[160px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All Statuses</SelectItem>
+              <SelectItem value="Winner">Winner</SelectItem>
+              <SelectItem value="Eligible">Eligible</SelectItem>
+              <SelectItem value="Disqualified">Disqualified</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={handleExport} className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white h-11 text-base">
             <Download className="h-5 w-5 mr-2" />
             Export
           </Button>

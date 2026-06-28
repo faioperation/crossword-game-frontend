@@ -13,6 +13,7 @@ export default function PuzzleManagementPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [dateFilter, setDateFilter] = useState("");
 
   const dummyPuzzles = [
     { id: "PZ-001", title: "Daily Mini Crossword", date: "2026-06-26", status: "Published", difficulty: "Easy", cluesCount: 12 },
@@ -23,7 +24,8 @@ export default function PuzzleManagementPage() {
   const filteredPuzzles = dummyPuzzles.filter(p => {
     const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "All" || p.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesDate = dateFilter ? p.date === dateFilter : true;
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
   const getStatusBadge = (status: string) => {
@@ -109,9 +111,12 @@ export default function PuzzleManagementPage() {
             <option value="Published">Published</option>
             <option value="Draft">Drafts</option>
           </select>
-          <Button variant="outline" className="border-slate-200 text-slate-700 bg-slate-50 hover:bg-slate-100 h-11">
-            <CalendarDays className="h-4 w-4 mr-2" /> Date
-          </Button>
+          <Input 
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="h-11 px-4 rounded-md border border-slate-200 bg-slate-50 text-slate-700 flex-1 sm:w-auto font-medium"
+          />
         </div>
       </div>
 

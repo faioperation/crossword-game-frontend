@@ -22,6 +22,13 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Search, Filter, Download, Eye, Dices, Hand, CalendarDays } from "lucide-react";
 
 // Mock Data
@@ -35,11 +42,22 @@ const historyEntries = [
 export default function WinnerHistoryPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedWinner, setSelectedWinner] = useState<typeof historyEntries[0] | null>(null);
+  const [filterDate, setFilterDate] = useState("");
+  const [filterType, setFilterType] = useState("All");
+  const [filterSelection, setFilterSelection] = useState("All");
+  const [filterStatus, setFilterStatus] = useState("All");
 
-  const filteredHistory = historyEntries.filter((winner) => 
-    winner.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    winner.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredHistory = historyEntries.filter((winner) => {
+    const matchesSearch = winner.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          winner.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          winner.prize.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDate = filterDate ? winner.winnerDate === filterDate : true;
+    const matchesType = filterType === "All" ? true : winner.type === filterType;
+    const matchesSelection = filterSelection === "All" ? true : winner.method === filterSelection;
+    const matchesStatus = filterStatus === "All" ? true : winner.status === filterStatus;
+    
+    return matchesSearch && matchesDate && matchesType && matchesSelection && matchesStatus;
+  });
 
   const handleExport = () => {
     exportTableToCSV(filteredHistory, "winner-history");
@@ -78,8 +96,8 @@ export default function WinnerHistoryPage() {
       </div>
 
       {/* Action Bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-        <div className="relative w-full sm:max-w-md">
+      <div className="flex flex-col gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="relative w-full">
           <Search className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
           <Input 
             placeholder="Search by name, email or prize..." 
@@ -88,15 +106,43 @@ export default function WinnerHistoryPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <Button variant="outline" className="flex-1 sm:flex-none border-slate-200 text-slate-700 bg-slate-50 hover:bg-slate-100 h-11 text-base">
-            <CalendarDays className="h-5 w-5 mr-2" />
-            Filter by Date
-          </Button>
-          <Button variant="outline" className="flex-1 sm:flex-none border-slate-200 text-slate-700 bg-slate-50 hover:bg-slate-100 h-11 text-base">
-            <Filter className="h-5 w-5 mr-2" />
-            More Filters
-          </Button>
+        <div className="flex flex-wrap items-center gap-4 w-full">
+          <Input 
+            type="date"
+            value={filterDate}
+            onChange={(e) => setFilterDate(e.target.value)}
+            className="h-11 text-base bg-slate-50 border-slate-200 w-full sm:flex-1 min-w-[150px]"
+          />
+          <Select value={filterType} onValueChange={setFilterType}>
+            <SelectTrigger className="h-11 text-base bg-slate-50 border-slate-200 w-full sm:flex-1 min-w-[150px]">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All Types</SelectItem>
+              <SelectItem value="Puzzle">Puzzle</SelectItem>
+              <SelectItem value="Alternate">Alternate</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterSelection} onValueChange={setFilterSelection}>
+            <SelectTrigger className="h-11 text-base bg-slate-50 border-slate-200 w-full sm:flex-1 min-w-[150px]">
+              <SelectValue placeholder="Selection" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All Selections</SelectItem>
+              <SelectItem value="Random">Random</SelectItem>
+              <SelectItem value="Manual">Manual</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="h-11 text-base bg-slate-50 border-slate-200 w-full sm:flex-1 min-w-[150px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All Statuses</SelectItem>
+              <SelectItem value="Claimed">Claimed</SelectItem>
+              <SelectItem value="Pending">Pending</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

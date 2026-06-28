@@ -23,6 +23,7 @@ export function WinnersList({ winners }: { winners: Winner[] }) {
                 <TableRow>
                   <TableHead>Date</TableHead>
                   <TableHead>Winner Name</TableHead>
+                  <TableHead>Prize</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -32,6 +33,7 @@ export function WinnersList({ winners }: { winners: Winner[] }) {
                       {new Date(winner.winningDate).toLocaleDateString()}
                     </TableCell>
                     <TableCell>{winner.name}</TableCell>
+                    <TableCell className="font-semibold text-primary">{winner.prizeName}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
