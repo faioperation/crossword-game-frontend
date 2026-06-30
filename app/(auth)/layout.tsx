@@ -2,6 +2,7 @@
 
 import { Gamepad2 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -28,10 +29,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         >
           {/* Mobile Logo */}
           <div className="md:hidden flex flex-col items-center mb-8">
-            <Link href="/" className="inline-flex items-center justify-center p-4 bg-accent/10 border border-accent/20 rounded-2xl mb-4 shadow-sm">
-              <Gamepad2 className="h-10 w-10 text-accent" />
+            <Link href="/" className="inline-flex items-center justify-center rounded-2xl mb-4 shadow-sm transition-transform active:scale-95">
+              <Image src="/assets/logo.jpeg" alt="Heritage Stackers" width={64} height={64} className="rounded-2xl object-cover" />
             </Link>
-            <h1 className="text-2xl font-extrabold tracking-tight text-primary">Crossword Giveaway</h1>
+            <h1 className="text-2xl font-extrabold tracking-tight text-primary">Heritage Stackers</h1>
           </div>
 
           <div className="w-full max-w-md mx-auto">
@@ -78,10 +79,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {/* Top Logo */}
           <div className="relative z-10 flex items-center pointer-events-auto">
             <Link href="/" className="inline-flex items-center gap-3 font-bold text-2xl group transition-all">
-              <div className="p-2 bg-accent rounded-lg text-primary shadow-lg shadow-accent/20 group-hover:scale-105 transition-transform">
-                <Gamepad2 className="h-6 w-6" />
+              <div className="rounded-lg shadow-lg shadow-accent/20 group-hover:scale-105 transition-transform overflow-hidden">
+                <Image src="/assets/logo.jpeg" alt="Heritage Stackers" width={40} height={40} className="object-cover" />
               </div>
-              <span className="text-white drop-shadow-md">Crossword Giveaway</span>
+              <span className="text-white drop-shadow-md">Heritage Stackers</span>
             </Link>
           </div>
           

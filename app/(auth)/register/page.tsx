@@ -56,7 +56,7 @@ export default function RegisterPage() {
     <div className="w-full space-y-8">
       <div className="space-y-2 text-center md:text-left">
         <h2 className="text-3xl font-bold tracking-tight text-[#1F2937]">Create an account</h2>
-        <p className="text-muted-foreground">Join the daily crossword giveaway platform</p>
+        <p className="text-muted-foreground">Join the Heritage Stackers Daily Mini Crossword.</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">

@@ -2,25 +2,25 @@ import { ScrollText } from "lucide-react";
 
 export function Rules() {
   return (
-    <div className="w-full space-y-6 text-slate-700 leading-relaxed text-sm md:text-base p-4">
-      <p>
-        Use the clues to fill the grid with the correct solution words.
-        Tap a clue from the scrollable clue lists (tablet and desktop),
-        press the &lt; and &gt; buttons (mobile), or select a cell within the
-        grid to highlight a clue. Type in your solution answer.
-      </p>
+    <div className="w-full space-y-6 text-slate-700 leading-relaxed text-sm md:text-base">
+      <p>Use the clues to fill in the crossword grid with the correct answers.</p>
 
-      <p>
-        To erase a letter during entry of a solution, simply tap the
-        delete button to erase last letter entry, and repeat to continue
-        to delete each letter previously entered.
-      </p>
+      <div className="space-y-2">
+        <p className="font-semibold text-slate-800">To choose a clue:</p>
+        <ul className="list-disc pl-6 space-y-1">
+          <li>On tablet or desktop, tap a clue from the clue list.</li>
+          <li>On mobile, use the &lt; and &gt; buttons to move between clues.</li>
+          <li>You can also tap any square in the grid to highlight its clue.</li>
+        </ul>
+      </div>
 
-      <p>
-        To amend a letter, select the cell and over-type with your
-        replacement letter. At any time during play, you can select the
-        Check button to reveal incorrect inputs.
-      </p>
+      <p>Type your answer into the grid.</p>
+
+      <p>To erase a letter, tap the delete button. Keep tapping delete to remove more letters.</p>
+
+      <p>To change a letter, tap the square you want to fix and type the new letter.</p>
+
+      <p>At any time, you can tap the Check button to see which letters are incorrect.</p>
     </div>
   );
 }

@@ -264,7 +264,7 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
                   <span className="hidden sm:inline">Rules</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+              <DialogContent className="w-[95vw] max-w-5xl sm:max-w-2xl max-h-[50vh] overflow-x-hidden overflow-y-auto p-6 md:p-8">
                 <DialogHeader>
                   <DialogTitle>How to Play</DialogTitle>
                 </DialogHeader>

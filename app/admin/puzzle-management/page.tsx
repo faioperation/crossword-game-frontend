@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Filter, Edit, Eye, Archive, Download, CalendarDays, Puzzle, CheckCircle2 } from "lucide-react";
+import { Plus, Search, Filter, Edit, Eye, Archive, Download, CalendarDays, Puzzle, CheckCircle2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function PuzzleManagementPage() {
   const router = useRouter();
@@ -15,13 +16,19 @@ export default function PuzzleManagementPage() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [dateFilter, setDateFilter] = useState("");
 
-  const dummyPuzzles = [
+  const initialPuzzles = [
     { id: "PZ-001", title: "Daily Mini Crossword", date: "2026-06-26", status: "Published", difficulty: "Easy", cluesCount: 12 },
     { id: "PZ-002", title: "Weekend Special", date: "2026-06-27", status: "Draft", difficulty: "Medium", cluesCount: 15 },
     { id: "PZ-003", title: "Flash Puzzle", date: "2026-06-28", status: "Draft", difficulty: "Hard", cluesCount: 18 },
   ];
+  const [puzzles, setPuzzles] = useState(initialPuzzles);
 
-  const filteredPuzzles = dummyPuzzles.filter(p => {
+  const handleDelete = (id: string) => {
+    setPuzzles(prev => prev.filter(p => p.id !== id));
+    toast.success("Puzzle deleted successfully");
+  };
+
+  const filteredPuzzles = puzzles.filter(p => {
     const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "All" || p.status === statusFilter;
     const matchesDate = dateFilter ? p.date === dateFilter : true;
@@ -60,7 +67,7 @@ export default function PuzzleManagementPage() {
               <span className="text-sm font-semibold text-white/80 uppercase tracking-wider">Total Puzzles</span>
               <Puzzle className="h-5 w-5 text-white/90" />
             </div>
-            <div className="text-4xl font-black text-white">{dummyPuzzles.length}</div>
+            <div className="text-4xl font-black text-white">{puzzles.length}</div>
           </div>
         </div>
 
@@ -73,7 +80,7 @@ export default function PuzzleManagementPage() {
               <span className="text-sm font-semibold text-white/80 uppercase tracking-wider">Published</span>
               <CheckCircle2 className="h-5 w-5 text-white/90" />
             </div>
-            <div className="text-4xl font-black text-white">{dummyPuzzles.filter(p => p.status === "Published").length}</div>
+            <div className="text-4xl font-black text-white">{puzzles.filter(p => p.status === "Published").length}</div>
           </div>
         </div>
 
@@ -86,7 +93,7 @@ export default function PuzzleManagementPage() {
               <span className="text-sm font-semibold text-white/80 uppercase tracking-wider">Drafts</span>
               <Edit className="h-5 w-5 text-white/90" />
             </div>
-            <div className="text-4xl font-black text-white">{dummyPuzzles.filter(p => p.status === "Draft").length}</div>
+            <div className="text-4xl font-black text-white">{puzzles.filter(p => p.status === "Draft").length}</div>
           </div>
         </div>
       </div>
@@ -161,6 +168,9 @@ export default function PuzzleManagementPage() {
                         <Button variant="ghost" size="icon" className="text-slate-500 hover:text-emerald-600 hover:bg-emerald-50" title="Edit" onClick={() => router.push("/admin/puzzle-management/create")}>
                           <Edit className="h-4 w-4" />
                         </Button>
+                        <Button variant="ghost" size="icon" className="text-slate-500 hover:text-red-600 hover:bg-red-50" title="Delete" onClick={() => handleDelete(puzzle.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -204,6 +214,9 @@ export default function PuzzleManagementPage() {
                   </Button>
                   <Button variant="outline" size="sm" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 flex-1" onClick={() => router.push("/admin/puzzle-management/create")}>
                     <Edit className="h-4 w-4 mr-2" /> Edit
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50 flex-1" onClick={() => handleDelete(puzzle.id)}>
+                    <Trash2 className="h-4 w-4 mr-2" /> Delete
                   </Button>
                 </div>
               </div>
