@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import { Toaster } from "sonner";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 
 const outfitSans = Outfit({
@@ -29,8 +30,10 @@ export default function RootLayout({
       className={`${outfitSans.variable} ${outfitMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
-        <Toaster position="top-center" richColors toastOptions={{ className: "text-base font-medium py-3 px-4" }} />
+        <Providers>
+          {children}
+          <Toaster position="top-center" richColors toastOptions={{ className: "text-base font-medium py-3 px-4" }} />
+        </Providers>
       </body>
     </html>
   );

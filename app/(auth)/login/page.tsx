@@ -10,16 +10,35 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { LogIn } from "lucide-react";
+import { LogIn, Eye, EyeOff } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { apiPost } from "@/lib/apiClient";
+import Cookies from "js-cookie";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   password: z.string().min(6, "Password must be at least 6 characters."),
 });
 
+type LoginResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    user: {
+      id: string;
+      email: string;
+      role: string;
+      name: string;
+      username: string;
+      avatar: string | null;
+    };
+    accessToken: string;
+  };
+};
+
 export default function LoginPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -33,17 +52,37 @@ export default function LoginPage() {
     },
   });
 
+  const loginMutation = useMutation({
+    mutationFn: (values: z.infer<typeof loginSchema>) =>
+      apiPost<LoginResponse>("/auth/login", values),
+    onSuccess: (data) => {
+      if (data.success && data.data) {
+        // Securely store the access token in cookies
+        Cookies.set("accessToken", data.data.accessToken, { secure: true, sameSite: "strict" });
+        Cookies.set("user", JSON.stringify(data.data.user), { secure: true, sameSite: "strict" });
+        toast.success(data.message || "Logged in successfully!");
+        
+        // Redirect based on user role
+        if (data.data.user.role === "SYSTEM_OWNER") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/");
+        }
+      } else {
+        toast.error(data.message || "Login failed");
+      }
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || "Something went wrong during login";
+      toast.error(message);
+    },
+  });
+
   async function onSubmit(values: z.infer<typeof loginSchema>) {
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log(values);
-      toast.success("Logged in successfully!");
-      setIsLoading(false);
-      router.push("/");
-    }, 1000);
+    loginMutation.mutate(values);
   }
+
+  const isLoading = loginMutation.isPending;
 
   return (
     <div className="w-full space-y-8">
@@ -73,14 +112,24 @@ export default function LoginPage() {
               Forgot password?
             </Link>
           </div>
-          <Input 
-            id="password" 
-            type="password" 
-            placeholder="••••••••"
-            className="h-11 bg-primary/5 border-primary/30 focus-visible:ring-primary/50 transition-colors"
-            disabled={isLoading}
-            {...register("password")} 
-          />
+          <div className="relative">
+            <Input 
+              id="password" 
+              type={showPassword ? "text" : "password"} 
+              placeholder="••••••••"
+              className="h-11 bg-primary/5 border-primary/30 focus-visible:ring-primary/50 transition-colors pr-10"
+              disabled={isLoading}
+              {...register("password")} 
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
           {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
         </div>
 

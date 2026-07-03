@@ -7,6 +7,7 @@ import { mockPuzzle } from "@/lib/puzzle-data";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { HeaderAuth } from "@/components/public/HeaderAuth";
 
 // Mock Data
 const mockWinners: Winner[] = [
@@ -35,14 +36,7 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 text-base text-slate-600 font-medium flex-shrink-0">
-            <span className="hidden lg:inline text-sm">Have an account?</span>
-            <Link href="/login">
-              <Button size="sm" className="bg-gradient-to-r from-[#D4AF37] to-[#e5c04b] hover:from-[#c5a030] hover:to-[#d4af37] text-white rounded-full px-5 h-8 sm:h-10 text-xs sm:text-sm font-bold shadow-md border border-yellow-400/50 transition-all hover:scale-105">
-                Log In
-              </Button>
-            </Link>
-          </div>
+          <HeaderAuth />
         </div>
       </header>
 

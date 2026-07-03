@@ -1,6 +1,8 @@
 "use client";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 import { usePathname, useRouter } from "next/navigation";
 import { UserCircle, LogOut } from "lucide-react";
 import { toast } from "sonner";
@@ -16,15 +18,26 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function TopNavbar() {
   const pathname = usePathname();
+  const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(null);
+
+  useEffect(() => {
+    const userCookie = Cookies.get("user");
+    if (userCookie) {
+      try {
+        setUser(JSON.parse(userCookie));
+      } catch (e) {
+        console.error("Failed to parse user cookie", e);
+      }
+    }
+  }, []);
   const router = useRouter();
   
   const handleLogout = () => {
-    toast.loading("Logging out securely...", { id: "logout-top" });
-    setTimeout(() => {
-      toast.dismiss("logout-top");
-      toast.success("Logged out successfully!");
-      router.push("/login");
-    }, 1200);
+    Cookies.remove("accessToken");
+    Cookies.remove("user");
+    toast.success("Logged out successfully!");
+    router.push("/");
+    router.refresh();
   };
   
   // Basic title formatting based on the route
@@ -61,8 +74,8 @@ export function TopNavbar() {
           <DropdownMenuContent align="end" className="w-56 mt-2">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">admin@example.com</p>
-                <p className="text-xs leading-none text-slate-500">Administrator</p>
+                <p className="text-sm font-medium leading-none">{user?.email || "Loading..."}</p>
+                <p className="text-xs leading-none text-slate-500">{user?.name || "Administrator"}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

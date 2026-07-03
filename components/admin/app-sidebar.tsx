@@ -1,6 +1,7 @@
 "use client";
 
 import { Home, Puzzle, FileText, Trophy, BarChart3, Settings, LogOut, Dices, History, Gift } from "lucide-react";
+import Cookies from "js-cookie";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -40,12 +41,11 @@ export function AppSidebar() {
   const router = useRouter();
 
   const handleLogout = () => {
-    toast.loading("Logging out securely...", { id: "logout" });
-    setTimeout(() => {
-      toast.dismiss("logout");
-      toast.success("Logged out successfully!");
-      router.push("/login");
-    }, 1200);
+    Cookies.remove("accessToken");
+    Cookies.remove("user");
+    toast.success("Logged out successfully!");
+    router.push("/");
+    router.refresh();
   };
 
   return (
