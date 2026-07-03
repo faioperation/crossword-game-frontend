@@ -21,59 +21,79 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Download, CalendarDays, Puzzle, Layers, CheckCircle2 } from "lucide-react";
-
-// Mock Data for the table
-const mockEntries = [
-  { id: "ENT-1045", name: "John Doe", email: "john@example.com", type: "Puzzle", date: "2026-06-26", time: "02:15", status: "Eligible" },
-  { id: "ENT-1044", name: "Sarah Smith", email: "sarah@example.com", type: "Alternate", date: "2026-06-26", time: "-", status: "Disqualified" },
-  { id: "ENT-1043", name: "Michael Johnson", email: "michael.j@example.com", type: "Puzzle", date: "2026-06-26", time: "01:45", status: "Winner" },
-  { id: "ENT-1042", name: "Emily Chen", email: "emily.c@example.com", type: "Puzzle", date: "2026-06-25", time: "03:10", status: "Eligible" },
-  { id: "ENT-1041", name: "David Wilson", email: "david.w@example.com", type: "Alternate", date: "2026-06-25", time: "-", status: "Eligible" },
-  { id: "ENT-1040", name: "Jessica Taylor", email: "jessica.t@example.com", type: "Puzzle", date: "2026-06-24", time: "04:20", status: "Eligible" },
-  { id: "ENT-1039", name: "James Anderson", email: "james.a@example.com", type: "Puzzle", date: "2026-06-23", time: "01:55", status: "Winner" },
-];
+import { Search, Filter, Download, CalendarDays, Puzzle, Layers, CheckCircle2, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { apiGet } from "@/lib/apiClient";
 
 export default function EntriesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const filteredEntries = mockEntries.filter((entry) => {
-    const matchesSearch = entry.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          entry.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDate = filterDate ? entry.date === filterDate : true;
-    const matchesStatus = filterStatus === "All" ? true : entry.status === filterStatus;
-    
-    return matchesSearch && matchesDate && matchesStatus;
+  const { data: responseData, isLoading } = useQuery({
+    queryKey: ["entries", currentPage, searchTerm, filterDate, filterStatus],
+    queryFn: () => {
+      // Build query params
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: "10",
+      });
+      if (searchTerm) params.append("search", searchTerm);
+      if (filterDate) params.append("date", filterDate);
+      if (filterStatus !== "All") params.append("status", filterStatus);
+
+      return apiGet<any>(`/system-owner/entries?${params.toString()}`);
+    }
   });
 
+  const entries = responseData?.data || [];
+  const stats = responseData?.stats || { todayEntries: 0, puzzleEntries: 0, alternateEntries: 0 };
+  const meta = responseData?.meta || { page: 1, limit: 10, total: 0, totalPage: 1 };
+
   const handleExport = () => {
-    exportTableToCSV(filteredEntries, "all-entries");
+    // Basic export for the current page data
+    const exportData = entries.map((entry: any) => ({
+      id: entry.id,
+      name: entry.participant?.name,
+      email: entry.participant?.email,
+      type: entry.type,
+      date: entry.date,
+      solveTime: entry.solveTime,
+      status: entry.status,
+    }));
+    exportTableToCSV(exportData, "entries");
+  };
+
+  const formatId = (id: string) => {
+    if (!id) return "-";
+    return `ENT-${id.substring(0, 5).toUpperCase()}`;
   };
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Winner": return <Badge className="bg-amber-500 hover:bg-amber-600 text-sm px-3 py-1">Winner</Badge>;
-      case "Eligible": return <Badge className="bg-emerald-500 hover:bg-emerald-600 text-sm px-3 py-1">Eligible</Badge>;
-      case "Disqualified": return <Badge variant="destructive" className="text-sm px-3 py-1">Disqualified</Badge>;
-      default: return <Badge variant="outline" className="text-sm px-3 py-1">{status}</Badge>;
+    const s = status?.toUpperCase() || "";
+    switch (s) {
+      case "WINNER": return <Badge className="bg-amber-500 hover:bg-amber-600 text-sm px-3 py-1">Winner</Badge>;
+      case "ELIGIBLE": return <Badge className="bg-emerald-500 hover:bg-emerald-600 text-sm px-3 py-1">Eligible</Badge>;
+      case "DISQUALIFIED": return <Badge variant="destructive" className="text-sm px-3 py-1">Disqualified</Badge>;
+      default: return <Badge variant="outline" className="text-sm px-3 py-1 capitalize">{status?.toLowerCase()}</Badge>;
     }
   };
 
   const getTypeBadge = (type: string) => {
-    switch (type) {
-      case "Puzzle": return <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50 text-sm px-3 py-1">Puzzle</Badge>;
-      case "Alternate": return <Badge variant="outline" className="text-purple-600 border-purple-200 bg-purple-50 text-sm px-3 py-1">Alternate</Badge>;
-      default: return <Badge variant="outline" className="text-sm px-3 py-1">{type}</Badge>;
+    const t = type?.toUpperCase() || "";
+    switch (t) {
+      case "PUZZLE": return <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50 text-sm px-3 py-1">Puzzle</Badge>;
+      case "ALTERNATE": return <Badge variant="outline" className="text-purple-600 border-purple-200 bg-purple-50 text-sm px-3 py-1">Alternate</Badge>;
+      default: return <Badge variant="outline" className="text-sm px-3 py-1 capitalize">{type?.toLowerCase()}</Badge>;
     }
   };
 
   const statCards = [
-    { title: "Today's Entries", value: "290", icon: CalendarDays, gradient: "from-blue-500 to-indigo-600" },
-    { title: "Puzzle Entries", value: "6,500", icon: Puzzle, gradient: "from-emerald-400 to-teal-600" },
-    { title: "Alternate Entries", value: "1,734", icon: Layers, gradient: "from-purple-500 to-fuchsia-600" },
-    { title: "Eligible Entries", value: "7,800", icon: CheckCircle2, gradient: "from-amber-400 to-orange-500" },
+    { title: "Today's Entries", value: stats.todayEntries, icon: CalendarDays, gradient: "from-blue-500 to-indigo-600" },
+    { title: "Puzzle Entries", value: stats.puzzleEntries, icon: Puzzle, gradient: "from-emerald-400 to-teal-600" },
+    { title: "Alternate Entries", value: stats.alternateEntries, icon: Layers, gradient: "from-purple-500 to-fuchsia-600" },
+    { title: "Eligible Entries", value: "—", icon: CheckCircle2, gradient: "from-amber-400 to-orange-500" }, // Update if backend adds eligible count
   ];
 
   return (
@@ -101,7 +121,7 @@ export default function EntriesPage() {
                 </span>
                 <card.icon className="h-5 w-5 text-white/90" />
               </div>
-              <div className="text-4xl font-black text-white">{card.value}</div>
+              <div className="text-4xl font-black text-white">{isLoading ? "-" : card.value}</div>
             </div>
           </div>
         ))}
@@ -115,25 +135,25 @@ export default function EntriesPage() {
             placeholder="Search entries by name or email..." 
             className="pl-10 h-11 text-base bg-slate-50 border-slate-200"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
           />
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           <Input 
             type="date"
             value={filterDate}
-            onChange={(e) => setFilterDate(e.target.value)}
+            onChange={(e) => { setFilterDate(e.target.value); setCurrentPage(1); }}
             className="h-11 text-base bg-slate-50 border-slate-200 w-full sm:w-[160px]"
           />
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <Select value={filterStatus} onValueChange={(val) => { setFilterStatus(val); setCurrentPage(1); }}>
             <SelectTrigger className="h-11 text-base bg-slate-50 border-slate-200 w-full sm:w-[160px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="All">All Statuses</SelectItem>
-              <SelectItem value="Winner">Winner</SelectItem>
-              <SelectItem value="Eligible">Eligible</SelectItem>
-              <SelectItem value="Disqualified">Disqualified</SelectItem>
+              <SelectItem value="WINNER">Winner</SelectItem>
+              <SelectItem value="ELIGIBLE">Eligible</SelectItem>
+              <SelectItem value="DISQUALIFIED">Disqualified</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={handleExport} className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white h-11 text-base">
@@ -144,7 +164,13 @@ export default function EntriesPage() {
       </div>
 
       {/* Data Table */}
-      <Card className="border-slate-200 shadow-sm overflow-hidden">
+      <Card className="border-slate-200 shadow-sm overflow-hidden relative min-h-[400px]">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-10 flex items-center justify-center">
+            <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
+          </div>
+        )}
+        
         <div className="hidden md:block overflow-x-auto">
           <Table>
             <TableHeader className="bg-slate-50/50">
@@ -158,64 +184,91 @@ export default function EntriesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredEntries.map((entry) => (
-                <TableRow key={entry.id} className="hover:bg-slate-50">
-                  <TableCell className="font-medium text-slate-900 text-base py-4">{entry.id}</TableCell>
-                  <TableCell className="py-4">
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-slate-800 text-base">{entry.name}</span>
-                      <span className="text-sm text-slate-500">{entry.email}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-4">{getTypeBadge(entry.type)}</TableCell>
-                  <TableCell className="text-slate-600 text-base py-4">{entry.date}</TableCell>
-                  <TableCell className="text-slate-600 font-mono text-base py-4">{entry.time}</TableCell>
-                  <TableCell className="py-4">{getStatusBadge(entry.status)}</TableCell>
+              {entries.length === 0 && !isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-10 text-slate-500">No entries found.</TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                entries.map((entry: any) => (
+                  <TableRow key={entry.id} className="hover:bg-slate-50">
+                    <TableCell className="font-medium text-slate-900 text-base py-4">{formatId(entry.id)}</TableCell>
+                    <TableCell className="py-4">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-slate-800 text-base">{entry.participant?.name || "Unknown"}</span>
+                        <span className="text-sm text-slate-500">{entry.participant?.email || "-"}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">{getTypeBadge(entry.type)}</TableCell>
+                    <TableCell className="text-slate-600 text-base py-4">{entry.date}</TableCell>
+                    <TableCell className="text-slate-600 font-mono text-base py-4">{entry.solveTime}</TableCell>
+                    <TableCell className="py-4">{getStatusBadge(entry.status)}</TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
         
         {/* Mobile Cards View */}
         <div className="md:hidden flex flex-col gap-4 p-4">
-          {filteredEntries.map((entry) => (
-            <div key={entry.id} className="flex flex-col gap-3 p-4 border border-slate-200 rounded-lg bg-slate-50">
-              <div className="flex justify-between items-start">
-                <div>
-                  <span className="font-semibold text-slate-800 text-base block">{entry.name}</span>
-                  <span className="text-xs text-slate-500 block">{entry.email}</span>
-                  <span className="text-xs text-slate-400 font-mono mt-0.5 block">{entry.id}</span>
+          {entries.length === 0 && !isLoading ? (
+            <div className="text-center py-10 text-slate-500">No entries found.</div>
+          ) : (
+            entries.map((entry: any) => (
+              <div key={entry.id} className="flex flex-col gap-3 p-4 border border-slate-200 rounded-lg bg-slate-50">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="font-semibold text-slate-800 text-base block">{entry.participant?.name || "Unknown"}</span>
+                    <span className="text-xs text-slate-500 block">{entry.participant?.email || "-"}</span>
+                    <span className="text-xs text-slate-400 font-mono mt-0.5 block">{formatId(entry.id)}</span>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    {getStatusBadge(entry.status)}
+                    {getTypeBadge(entry.type)}
+                  </div>
                 </div>
-                <div className="flex flex-col items-end gap-2">
-                  {getStatusBadge(entry.status)}
-                  {getTypeBadge(entry.type)}
+                <div className="grid grid-cols-2 gap-2 text-sm mt-1 pt-3 border-t border-slate-200">
+                  <div>
+                    <span className="text-slate-500 block text-xs font-medium">Date</span>
+                    <span className="font-semibold text-slate-700">{entry.date}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block text-xs font-medium">Solve Time</span>
+                    <span className="text-slate-700 font-mono">{entry.solveTime}</span>
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-sm mt-1 pt-3 border-t border-slate-200">
-                <div>
-                  <span className="text-slate-500 block text-xs font-medium">Date</span>
-                  <span className="font-semibold text-slate-700">{entry.date}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block text-xs font-medium">Solve Time</span>
-                  <span className="text-slate-700 font-mono">{entry.time}</span>
-                </div>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
         
         {/* Pagination */}
         <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between text-base text-slate-500 gap-4">
-          <div>Showing {filteredEntries.length} entries</div>
+          <div>Showing {entries.length} entries (Total: {meta.total})</div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" disabled className="bg-white h-9 px-4 text-base">Previous</Button>
-            <Button variant="outline" size="sm" className="bg-white h-9 w-9 text-base">1</Button>
-            <Button variant="outline" size="sm" className="bg-white h-9 w-9 text-base">2</Button>
-            <Button variant="outline" size="sm" className="bg-white h-9 w-9 text-base">3</Button>
-            <span className="px-2 text-base">...</span>
-            <Button variant="outline" size="sm" className="bg-white h-9 px-4 text-base">Next</Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={meta.page <= 1}
+              className="bg-white h-9 px-4 text-base"
+            >
+              Previous
+            </Button>
+            
+            <span className="px-3 font-medium text-slate-700">
+              Page {meta.page} of {Math.max(1, meta.totalPage)}
+            </span>
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setCurrentPage(p => Math.min(meta.totalPage, p + 1))}
+              disabled={meta.page >= meta.totalPage}
+              className="bg-white h-9 px-4 text-base"
+            >
+              Next
+            </Button>
           </div>
         </div>
       </Card>
