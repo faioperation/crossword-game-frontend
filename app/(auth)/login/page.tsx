@@ -58,8 +58,8 @@ export default function LoginPage() {
     onSuccess: (data) => {
       if (data.success && data.data) {
         // Securely store the access token in cookies
-        Cookies.set("accessToken", data.data.accessToken, { secure: true, sameSite: "strict" });
-        Cookies.set("user", JSON.stringify(data.data.user), { secure: true, sameSite: "strict" });
+        Cookies.set("accessToken", data.data.accessToken, { secure: true, sameSite: "lax", path: "/" });
+        Cookies.set("user", JSON.stringify(data.data.user), { secure: true, sameSite: "lax", path: "/" });
         toast.success(data.message || "Logged in successfully!");
         
         // Redirect based on user role

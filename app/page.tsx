@@ -14,14 +14,9 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { HeaderAuth } from "@/components/public/HeaderAuth";
 
-// Mock Data
-const mockWinners: Winner[] = [
-  { id: "w-1", name: "Jane Smith", prizeName: "1oz Silver Eagle Coin", winningDate: "2026-06-24T00:00:00Z" },
-  { id: "w-2", name: "Bob Johnson", prizeName: "Morgan Silver Dollar", winningDate: "2026-06-23T00:00:00Z" },
-];
-
 export default function Home() {
   const [activePuzzle, setActivePuzzle] = useState<any>(null);
+  const [recentWinners, setRecentWinners] = useState<Winner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [prizeInfo, setPrizeInfo] = useState("Daily Mystery Prize");
   const [isSubmittedToday, setIsSubmittedToday] = useState(false);
@@ -82,9 +77,27 @@ export default function Home() {
         setIsLoading(false);
       }
     };
+
+    const fetchRecentWinners = async () => {
+      try {
+        const res = await apiGet<any>('/users/home/recent-winners');
+        if (res.success && res.data) {
+          const mappedWinners = res.data.map((w: any) => ({
+            id: w.id,
+            name: w.winnerName,
+            prizeName: w.prize,
+            winningDate: w.date
+          }));
+          setRecentWinners(mappedWinners);
+        }
+      } catch (err) {
+        console.error("Failed to fetch recent winners", err);
+      }
+    };
     
     // Check if submitted today
-    const today = new Date().toISOString().split('T')[0];
+    const d = new Date();
+    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     const savedDate = localStorage.getItem("cw_submitted_today");
     if (savedDate) {
       if (savedDate === today) {
@@ -99,6 +112,7 @@ export default function Home() {
     window.addEventListener("puzzle-submitted", handleSubmission);
 
     fetchPuzzle();
+    fetchRecentWinners();
     
     return () => {
       window.removeEventListener("puzzle-submitted", handleSubmission);
@@ -197,7 +211,7 @@ export default function Home() {
   
               {/* Info Sections */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-                <WinnersList winners={mockWinners} />
+                <WinnersList winners={recentWinners} />
                 <ParticipationForm />
               </div>
             </div>
