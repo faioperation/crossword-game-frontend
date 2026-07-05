@@ -28,11 +28,10 @@ import { apiGet } from "@/lib/apiClient";
 export default function EntriesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
-  const [filterStatus, setFilterStatus] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data: responseData, isLoading } = useQuery({
-    queryKey: ["entries", currentPage, searchTerm, filterDate, filterStatus],
+    queryKey: ["entries", currentPage, searchTerm, filterDate],
     queryFn: () => {
       // Build query params
       const params = new URLSearchParams({
@@ -41,7 +40,6 @@ export default function EntriesPage() {
       });
       if (searchTerm) params.append("search", searchTerm);
       if (filterDate) params.append("date", filterDate);
-      if (filterStatus !== "All") params.append("status", filterStatus);
 
       return apiGet<any>(`/system-owner/entries?${params.toString()}`);
     }
@@ -60,7 +58,6 @@ export default function EntriesPage() {
       type: entry.type,
       date: entry.date,
       solveTime: entry.solveTime,
-      status: entry.status,
     }));
     exportTableToCSV(exportData, "entries");
   };
@@ -68,16 +65,6 @@ export default function EntriesPage() {
   const formatId = (id: string) => {
     if (!id) return "-";
     return `ENT-${id.substring(0, 5).toUpperCase()}`;
-  };
-
-  const getStatusBadge = (status: string) => {
-    const s = status?.toUpperCase() || "";
-    switch (s) {
-      case "WINNER": return <Badge className="bg-amber-500 hover:bg-amber-600 text-sm px-3 py-1">Winner</Badge>;
-      case "ELIGIBLE": return <Badge className="bg-emerald-500 hover:bg-emerald-600 text-sm px-3 py-1">Eligible</Badge>;
-      case "DISQUALIFIED": return <Badge variant="destructive" className="text-sm px-3 py-1">Disqualified</Badge>;
-      default: return <Badge variant="outline" className="text-sm px-3 py-1 capitalize">{status?.toLowerCase()}</Badge>;
-    }
   };
 
   const getTypeBadge = (type: string) => {
@@ -145,17 +132,6 @@ export default function EntriesPage() {
             onChange={(e) => { setFilterDate(e.target.value); setCurrentPage(1); }}
             className="h-11 text-base bg-slate-50 border-slate-200 w-full sm:w-[160px]"
           />
-          <Select value={filterStatus} onValueChange={(val) => { setFilterStatus(val); setCurrentPage(1); }}>
-            <SelectTrigger className="h-11 text-base bg-slate-50 border-slate-200 w-full sm:w-[160px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Statuses</SelectItem>
-              <SelectItem value="WINNER">Winner</SelectItem>
-              <SelectItem value="ELIGIBLE">Eligible</SelectItem>
-              <SelectItem value="DISQUALIFIED">Disqualified</SelectItem>
-            </SelectContent>
-          </Select>
           <Button onClick={handleExport} className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white h-11 text-base">
             <Download className="h-5 w-5 mr-2" />
             Export
@@ -180,13 +156,12 @@ export default function EntriesPage() {
                 <TableHead className="font-semibold text-slate-600 text-base py-4">Type</TableHead>
                 <TableHead className="font-semibold text-slate-600 text-base py-4">Date</TableHead>
                 <TableHead className="font-semibold text-slate-600 text-base py-4">Solve Time</TableHead>
-                <TableHead className="font-semibold text-slate-600 text-base py-4">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {entries.length === 0 && !isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-10 text-slate-500">No entries found.</TableCell>
+                  <TableCell colSpan={5} className="text-center py-10 text-slate-500">No entries found.</TableCell>
                 </TableRow>
               ) : (
                 entries.map((entry: any) => (
@@ -201,7 +176,6 @@ export default function EntriesPage() {
                     <TableCell className="py-4">{getTypeBadge(entry.type)}</TableCell>
                     <TableCell className="text-slate-600 text-base py-4">{entry.date}</TableCell>
                     <TableCell className="text-slate-600 font-mono text-base py-4">{entry.solveTime}</TableCell>
-                    <TableCell className="py-4">{getStatusBadge(entry.status)}</TableCell>
                   </TableRow>
                 ))
               )}
@@ -223,7 +197,6 @@ export default function EntriesPage() {
                     <span className="text-xs text-slate-400 font-mono mt-0.5 block">{formatId(entry.id)}</span>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    {getStatusBadge(entry.status)}
                     {getTypeBadge(entry.type)}
                   </div>
                 </div>
