@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { Save, Eye, CheckCircle, AlertTriangle, ArrowLeft, Loader2 } from "lucid
 import { useCrosswordBuilder } from "@/hooks/useCrosswordBuilder";
 import { apiPost, apiGet, apiPatch } from "@/lib/apiClient";
 
-export default function CreatePuzzlePage() {
+function CreatePuzzleContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const puzzleId = searchParams.get("id");
@@ -436,5 +436,18 @@ export default function CreatePuzzlePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CreatePuzzlePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-[400px] w-full">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mb-4" />
+        <p className="text-slate-500">Loading...</p>
+      </div>
+    }>
+      <CreatePuzzleContent />
+    </Suspense>
   );
 }
