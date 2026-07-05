@@ -11,7 +11,7 @@ import Link from "next/link";
 import { Send, CheckCircle2, ArrowLeft, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-
+import { apiPost } from "@/lib/apiClient";
 // Schemas for each step
 const emailSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -36,6 +36,7 @@ export default function ForgotPasswordPage() {
   const [step, setStep] = useState<Step>("email");
   const [isLoading, setIsLoading] = useState(false);
   const [savedEmail, setSavedEmail] = useState("");
+  const [resetToken, setResetToken] = useState("");
 
   // Forms
   const emailForm = useForm<z.infer<typeof emailSchema>>({
@@ -56,32 +57,58 @@ export default function ForgotPasswordPage() {
   // Submit Handlers
   async function onEmailSubmit(values: z.infer<typeof emailSchema>) {
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const response = await apiPost<{ success: boolean; message: string }>("/auth/forgot-password", {
+        email: values.email,
+      });
       setSavedEmail(values.email);
-      setIsLoading(false);
       setStep("otp");
-      toast.success("OTP sent to your email!");
-    }, 1200);
+      toast.success(response.message || "OTP sent to your email!");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || error.message || "Failed to send OTP.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   async function onOtpSubmit(values: z.infer<typeof otpSchema>) {
     setIsLoading(true);
-    setTimeout(() => {
-      console.log("Verified OTP:", values.otp);
-      setIsLoading(false);
+    try {
+      const response = await apiPost<{ success: boolean; message: string; data?: { resetToken: string } }>("/auth/verify-forgot-password-otp", {
+        email: savedEmail,
+        otp: values.otp,
+      });
+      
+      if (response.data?.resetToken) {
+        setResetToken(response.data.resetToken);
+      }
+      
       setStep("password");
-      toast.success("OTP verified successfully!");
-    }, 1200);
+      toast.success(response.message || "OTP verified successfully!");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || error.message || "Failed to verify OTP.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   async function onPasswordSubmit(values: z.infer<typeof passwordSchema>) {
     setIsLoading(true);
-    setTimeout(() => {
-      console.log("New password set for:", savedEmail);
-      setIsLoading(false);
-      toast.success("Password reset successfully! Please login with your new password.");
+    try {
+      const response = await apiPost<{ success: boolean; message: string }>("/auth/reset-password", {
+        newPassword: values.password,
+        confirmPassword: values.confirmPassword,
+      }, {
+        headers: resetToken ? { Authorization: `Bearer ${resetToken}` } : undefined
+      });
+      
+      toast.success(response.message || "Password reset successfully! Please login with your new password.");
       router.push("/login");
-    }, 1500);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || error.message || "Failed to reset password.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
