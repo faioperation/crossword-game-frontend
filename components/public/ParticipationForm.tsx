@@ -47,8 +47,9 @@ export function ParticipationForm() {
       } else {
         toast.error(res.message || "Failed to submit entry. Please try again.");
       }
-    } catch (error) {
-      toast.error("Failed to submit entry. Please try again.");
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || "Failed to submit entry. Please try again.";
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }

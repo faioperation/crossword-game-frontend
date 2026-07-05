@@ -82,8 +82,9 @@ export function WinModal({ isOpen, onClose, time, seconds = 0 }: WinModalProps) 
       } else {
         toast.error(res.message || "Failed to submit. Please try again.");
       }
-    } catch (error) {
-      toast.error("An error occurred while submitting.");
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || "An error occurred while submitting.";
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
