@@ -1,7 +1,12 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { apiGet } from "@/lib/apiClient";
+import { Loader2, Gamepad2, ArrowRight, Gift, CheckCircle2 } from "lucide-react";
 import { WinnersList } from "@/components/public/WinnersList";
+import { ParticipationForm } from "@/components/public/ParticipationForm";
 import { Rules } from "@/components/public/Rules";
 import type { Winner } from "@/types";
-import { Gamepad2, ArrowRight, Gift } from "lucide-react";
 import { CrosswordGame } from "@/components/game/CrosswordGame";
 import { mockPuzzle } from "@/lib/puzzle-data";
 import Link from "next/link";
@@ -16,6 +21,90 @@ const mockWinners: Winner[] = [
 ];
 
 export default function Home() {
+  const [activePuzzle, setActivePuzzle] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [prizeInfo, setPrizeInfo] = useState("Daily Mystery Prize");
+  const [isSubmittedToday, setIsSubmittedToday] = useState(false);
+
+  useEffect(() => {
+    const fetchPuzzle = async () => {
+      try {
+        const res = await apiGet<any>('/users/home/active-puzzle');
+        if (res.success && res.data?.puzzle) {
+          const apiPuzzle = res.data.puzzle;
+          setPrizeInfo(apiPuzzle.dailyPrize || "Daily Mystery Prize");
+          
+          // Map to frontend Puzzle type
+          const mappedGrid = apiPuzzle.cells.map((row: any[], r: number) => 
+            row.map((cell: any, c: number) => ({
+              row: r,
+              col: c,
+              value: "",
+              answer: cell.letter || "",
+              isBlack: cell.isBlack,
+              number: cell.clueNum || undefined
+            }))
+          );
+          
+          const mappedClues = apiPuzzle.clues.map((clue: any) => {
+            // Find row and col from grid
+            let r = 0;
+            let c = 0;
+            for (let i = 0; i < apiPuzzle.cells.length; i++) {
+              for (let j = 0; j < apiPuzzle.cells[i].length; j++) {
+                if (apiPuzzle.cells[i][j].clueNum === clue.number) {
+                  r = i;
+                  c = j;
+                }
+              }
+            }
+            return {
+              number: clue.number,
+              direction: clue.direction.toLowerCase(),
+              text: clue.text,
+              answer: "", 
+              row: r,
+              col: c
+            };
+          });
+
+          setActivePuzzle({
+            id: apiPuzzle.id,
+            title: apiPuzzle.title,
+            date: new Date().toISOString().split('T')[0],
+            grid: mappedGrid,
+            clues: mappedClues
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch active puzzle", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    // Check if submitted today
+    const today = new Date().toISOString().split('T')[0];
+    const savedDate = localStorage.getItem("cw_submitted_today");
+    if (savedDate) {
+      if (savedDate === today) {
+        setIsSubmittedToday(true);
+      } else {
+        localStorage.removeItem("cw_submitted_today");
+      }
+    }
+    
+    // Listen for new submissions
+    const handleSubmission = () => setIsSubmittedToday(true);
+    window.addEventListener("puzzle-submitted", handleSubmission);
+
+    fetchPuzzle();
+    
+    return () => {
+      window.removeEventListener("puzzle-submitted", handleSubmission);
+    };
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
       <header className="bg-white border-b sticky top-0 z-50 shadow-sm">
@@ -54,7 +143,7 @@ export default function Home() {
                 Today's Featured Prize
               </div>
               <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#FFE87C] via-white to-[#D4AF37]">
-                1oz Silver Eagle Coin
+                {prizeInfo}
               </h2>
               <p className="text-slate-300 font-medium max-w-lg text-sm sm:text-base">
                 Solve today's mini crossword and submit your entry for a chance to win this beautiful, authentic silver coin. A new winner is chosen daily!
@@ -73,15 +162,47 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Game Engine Section */}
-        <section className="w-full">
-          <CrosswordGame puzzle={mockPuzzle} />
-        </section>
-
-        {/* Info Sections */}
-        <section className="w-full">
-          <WinnersList winners={mockWinners} />
-        </section>
+        {/* Main Content Section */}
+        {isSubmittedToday ? (
+          <section className="w-full">
+            <div className="bg-white rounded-2xl p-10 shadow-sm border border-slate-200 text-center space-y-4">
+              <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-10 h-10 text-green-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-800">You're All Set for Today!</h3>
+              <p className="text-slate-600 max-w-md mx-auto">
+                You have already submitted your entry for today's prize draw. Come back tomorrow for a new puzzle and another chance to win!
+              </p>
+            </div>
+          </section>
+        ) : (
+          <section className="w-full">
+            <div className="space-y-16">
+              {/* Game Engine Section */}
+              <div className="w-full">
+                {isLoading ? (
+                  <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-sm border border-slate-200">
+                    <Loader2 className="w-10 h-10 animate-spin text-[#D4AF37] mb-4" />
+                    <p className="text-slate-500 font-medium">Loading today's puzzle...</p>
+                  </div>
+                ) : activePuzzle ? (
+                  <CrosswordGame puzzle={activePuzzle} />
+                ) : (
+                  <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-slate-200">
+                    <h3 className="text-xl font-bold text-slate-800 mb-2">No Active Puzzle</h3>
+                    <p className="text-slate-500">There is no active puzzle for today. Check back later!</p>
+                  </div>
+                )}
+              </div>
+  
+              {/* Info Sections */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+                <WinnersList winners={mockWinners} />
+                <ParticipationForm />
+              </div>
+            </div>
+          </section>
+        )}
       </main>
 
       {/* Short Footer */}

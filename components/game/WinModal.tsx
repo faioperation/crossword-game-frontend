@@ -4,16 +4,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trophy, X, User, Mail, Phone, Sparkles } from "lucide-react";
+import { Trophy, X, User, Mail, Phone, Sparkles, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { apiPost } from "@/lib/apiClient";
+import { toast } from "sonner";
 
 type WinModalProps = {
   isOpen: boolean;
   onClose: () => void;
   time?: string;
+  seconds?: number;
 };
 
-export function WinModal({ isOpen, onClose, time }: WinModalProps) {
+export function WinModal({ isOpen, onClose, time, seconds = 0 }: WinModalProps) {
   const [submitted, setSubmitted] = useState(false);
   const [particles, setParticles] = useState<any[]>([]);
 
@@ -39,9 +42,50 @@ export function WinModal({ isOpen, onClose, time }: WinModalProps) {
     }
   }, [isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: ""
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    if (!formData.name || !formData.email) {
+      toast.error("Name and Email are required");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        date: today,
+        type: "PUZZLE",
+        durationSeconds: seconds
+      };
+      
+      const res = await apiPost("/users/home/submit-attempt", payload);
+      
+      if (res.success) {
+        setSubmitted(true);
+        localStorage.setItem("cw_submitted_today", today);
+        window.dispatchEvent(new Event("puzzle-submitted"));
+      } else {
+        toast.error(res.message || "Failed to submit. Please try again.");
+      }
+    } catch (error) {
+      toast.error("An error occurred while submitting.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -154,29 +198,33 @@ export function WinModal({ isOpen, onClose, time }: WinModalProps) {
                           <Label htmlFor="name" className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Full Name</Label>
                           <div className="relative">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#D4AF37] transition-colors" />
-                            <Input id="name" required placeholder="John Doe" className="h-12 pl-10 bg-white border-slate-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20 rounded-xl transition-all font-medium placeholder:font-normal" />
+                          <Input id="name" name="name" value={formData.name} onChange={handleChange} required placeholder="John Doe" className="h-12 pl-10 bg-white border-slate-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20 rounded-xl transition-all font-medium placeholder:font-normal" />
                           </div>
                         </div>
                         <div className="space-y-1.5 relative group">
                           <Label htmlFor="email" className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Email Address</Label>
                           <div className="relative">
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#D4AF37] transition-colors" />
-                            <Input id="email" type="email" required placeholder="john@example.com" className="h-12 pl-10 bg-white border-slate-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20 rounded-xl transition-all font-medium placeholder:font-normal" />
+                            <Input id="email" name="email" value={formData.email} onChange={handleChange} type="email" required placeholder="john@example.com" className="h-12 pl-10 bg-white border-slate-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20 rounded-xl transition-all font-medium placeholder:font-normal" />
                           </div>
                         </div>
                         <div className="space-y-1.5 relative group">
                           <Label htmlFor="phone" className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Phone Number <span className="text-slate-400 font-normal capitalize">(Optional)</span></Label>
                           <div className="relative">
                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#D4AF37] transition-colors" />
-                            <Input id="phone" type="tel" placeholder="+1 (555) 000-0000" className="h-12 pl-10 bg-white border-slate-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20 rounded-xl transition-all font-medium placeholder:font-normal" />
+                            <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} type="tel" placeholder="+1 (555) 000-0000" className="h-12 pl-10 bg-white border-slate-200 focus:border-[#D4AF37] focus:ring-[#D4AF37]/20 rounded-xl transition-all font-medium placeholder:font-normal" />
                           </div>
                         </div>
                         
                         <Button 
                           type="submit" 
+                          disabled={isSubmitting}
                           className="w-full h-12 text-base font-bold mt-2 bg-gradient-to-r from-[#D4AF37] to-[#e5c04b] hover:from-[#c5a030] hover:to-[#d4af37] text-white shadow-xl shadow-yellow-500/25 rounded-xl transition-all duration-300 hover:scale-[1.02]"
                         >
-                          Submit Entry
+                          {isSubmitting ? (
+                            <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                          ) : null}
+                          {isSubmitting ? "Submitting..." : "Submit Entry"}
                         </Button>
                       </motion.form>
                     </div>

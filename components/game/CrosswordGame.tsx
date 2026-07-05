@@ -27,23 +27,50 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
     puzzle.grid.map(row => row.map(cell => ({ ...cell, value: "" })))
   );
 
+  const [seconds, setSeconds] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [isRestored, setIsRestored] = useState(false);
+
   useEffect(() => {
-    setGrid(puzzle.grid.map(row => row.map(cell => ({ ...cell, value: "" }))));
+    try {
+      const saved = localStorage.getItem(`cw_prog_${puzzle.id}`);
+      if (saved) {
+        const decoded = JSON.parse(atob(saved));
+        setGrid(puzzle.grid.map((row, r) => 
+          row.map((cell, c) => ({ ...cell, value: decoded.gridValues?.[r]?.[c] || "" }))
+        ));
+        if (decoded.seconds) setSeconds(decoded.seconds);
+      } else {
+        setGrid(puzzle.grid.map(row => row.map(cell => ({ ...cell, value: "" }))));
+        setSeconds(0);
+      }
+    } catch (e) {
+      setGrid(puzzle.grid.map(row => row.map(cell => ({ ...cell, value: "" }))));
+      setSeconds(0);
+    }
     setFocusedCell(null);
     setHasStarted(false);
     setIsWon(false);
-    setSeconds(0);
+    setIsRestored(true);
   }, [puzzle]);
   
   const [focusedCell, setFocusedCell] = useState<{ row: number; col: number } | null>(null);
   const [direction, setDirection] = useState<'across' | 'down'>('across');
   const [isWon, setIsWon] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
-  
-  const [hasStarted, setHasStarted] = useState(false);
 
-  // Timer State
-  const [seconds, setSeconds] = useState(0);
+  // Autosave Effect
+  useEffect(() => {
+    if (!isRestored || !grid || grid.length === 0) return;
+    try {
+      const gridValues = grid.map(row => row.map(cell => cell.value));
+      const payload = JSON.stringify({ gridValues, seconds });
+      const encoded = btoa(payload);
+      localStorage.setItem(`cw_prog_${puzzle.id}`, encoded);
+    } catch (e) {
+      // silently fail if localstorage is unavailable
+    }
+  }, [grid, seconds, puzzle.id, isRestored]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -333,7 +360,7 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
 
       </div>
 
-      <WinModal isOpen={isWon} onClose={() => setIsWon(false)} time={formatTime(seconds)} />
+      <WinModal isOpen={isWon} onClose={() => setIsWon(false)} time={formatTime(seconds)} seconds={seconds} />
     </div>
   );
 }

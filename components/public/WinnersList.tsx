@@ -5,7 +5,7 @@ import type { Winner } from "@/types";
 
 export function WinnersList({ winners }: { winners: Winner[] }) {
   return (
-    <Card className="w-full">
+    <Card className="w-full h-full flex flex-col border-slate-200 shadow-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Trophy className="h-5 w-5 text-primary" />
@@ -13,7 +13,7 @@ export function WinnersList({ winners }: { winners: Winner[] }) {
         </CardTitle>
         <CardDescription>Congratulations to our previous crossword solvers!</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 flex flex-col">
         {winners.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">No winners yet. Be the first!</p>
         ) : (
