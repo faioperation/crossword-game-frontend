@@ -36,7 +36,7 @@ export function ParticipationForm() {
         durationSeconds: 0
       };
       
-      const res = await apiPost("/users/home/submit-attempt", payload);
+      const res = await apiPost<any>("/users/home/submit-attempt", payload);
       
       if (res.success) {
         toast.success("Successfully entered the draw! Good luck!");

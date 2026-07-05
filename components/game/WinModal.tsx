@@ -72,7 +72,7 @@ export function WinModal({ isOpen, onClose, time, seconds = 0 }: WinModalProps) 
         durationSeconds: seconds
       };
       
-      const res = await apiPost("/users/home/submit-attempt", payload);
+      const res = await apiPost<any>("/users/home/submit-attempt", payload);
       
       if (res.success) {
         setSubmitted(true);
