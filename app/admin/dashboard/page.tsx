@@ -1,7 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Puzzle, Users, Trophy, Activity, TrendingUp, Calendar, CheckCircle, Clock } from "lucide-react";
+import { Puzzle, Users, Trophy, Activity, TrendingUp, Calendar, CheckCircle, Loader2 } from "lucide-react";
 import {
   Line,
   LineChart,
@@ -13,48 +14,57 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-
-const dailyEntriesData = [
-  { day: "Mon", entries: 120 },
-  { day: "Tue", entries: 150 },
-  { day: "Wed", entries: 180 },
-  { day: "Thu", entries: 170 },
-  { day: "Fri", entries: 210 },
-  { day: "Sat", entries: 250 },
-  { day: "Sun", entries: 290 },
-];
-
-const completionData = [
-  { puzzle: "Mon", success: 85, failed: 15 },
-  { puzzle: "Tue", success: 72, failed: 28 },
-  { puzzle: "Wed", success: 90, failed: 10 },
-  { puzzle: "Thu", success: 65, failed: 35 },
-  { puzzle: "Fri", success: 78, failed: 22 },
-  { puzzle: "Sat", success: 88, failed: 12 },
-  { puzzle: "Sun", success: 60, failed: 40 },
-];
+import { apiGet } from "@/lib/apiClient";
 
 export default function DashboardPage() {
+  const [data, setData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await apiGet<any>("/system-owner/dashboard");
+        if (res.success && res.data) {
+          setData(res.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, []);
+
+  if (isLoading || !data) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[500px]">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mb-4" />
+        <p className="text-slate-500 font-medium">Loading dashboard statistics...</p>
+      </div>
+    );
+  }
+
   const stats = [
     {
       title: "Today's Puzzle",
-      value: "PZ-012",
-      description: "Mini Crossword",
+      value: data.todayPuzzle?.displayId || "-",
+      description: data.todayPuzzle?.title || "No puzzle today",
       icon: Calendar,
       gradient: "from-blue-500 to-indigo-600",
       shadow: "shadow-indigo-500/20",
     },
     {
       title: "Entries Today",
-      value: "290",
-      description: "+40 from yesterday",
+      value: data.entriesToday?.count?.toString() || "0",
+      description: data.entriesToday?.change || "No changes",
       icon: Users,
       gradient: "from-emerald-400 to-teal-600",
       shadow: "shadow-teal-500/20",
     },
     {
       title: "Winners",
-      value: "45",
+      value: data.winners?.count?.toString() || "0",
       description: "Declared today",
       icon: Trophy,
       gradient: "from-amber-400 to-orange-500",
@@ -62,15 +72,15 @@ export default function DashboardPage() {
     },
     {
       title: "Active Puzzle",
-      value: "PZ-012",
-      description: "Currently running",
+      value: data.activePuzzle?.displayId || "-",
+      description: data.activePuzzle?.status || "None active",
       icon: Activity,
       gradient: "from-rose-400 to-red-600",
       shadow: "shadow-red-500/20",
     },
     {
       title: "Total Entries",
-      value: "8,234",
+      value: data.totalEntries?.count?.toString() || "0",
       description: "All time entries",
       icon: Puzzle,
       gradient: "from-cyan-400 to-blue-600",
@@ -78,19 +88,12 @@ export default function DashboardPage() {
     },
     {
       title: "Completion",
-      value: "78%",
+      value: data.completion?.rate || "0%",
       description: "Average success rate",
       icon: CheckCircle,
       gradient: "from-violet-400 to-purple-600",
       shadow: "shadow-purple-500/20",
     },
-  ];
-
-  const recentActivity = [
-    { text: "Puzzle Published: PZ-012 Mini Crossword", time: "10 mins ago", color: "text-blue-500" },
-    { text: "Winner Selected: Alex M.", time: "1 hour ago", color: "text-orange-500" },
-    { text: "New Entry: PZ-012 solved in 2:15", time: "2 hours ago", color: "text-teal-500" },
-    { text: "Alternate Entry: PZ-011 late submission", time: "4 hours ago", color: "text-slate-500" },
   ];
 
   return (
@@ -143,7 +146,7 @@ export default function DashboardPage() {
           <CardContent className="p-6 flex-1">
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={dailyEntriesData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <LineChart data={data.dailyEntriesChart || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                   <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} dy={10} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
@@ -153,7 +156,7 @@ export default function DashboardPage() {
                   />
                   <Line
                     type="monotone"
-                    dataKey="entries"
+                    dataKey="count"
                     stroke="#8b5cf6"
                     strokeWidth={4}
                     dot={{ fill: "#8b5cf6", strokeWidth: 2, r: 4 }}
@@ -177,45 +180,22 @@ export default function DashboardPage() {
           <CardContent className="p-6 flex-1">
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={completionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barSize={32}>
+                <BarChart data={data.puzzleCompletionRateChart || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barSize={32}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey="puzzle" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} dy={10} />
+                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} dy={10} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
                   <Tooltip
                     contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
                     cursor={{ fill: "#f1f5f9" }}
                   />
-                  <Bar dataKey="success" stackId="a" fill="#10b981" radius={[0, 0, 4, 4]} name="Success (%)" />
-                  <Bar dataKey="failed" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} name="Failed (%)" />
+                  <Bar dataKey="completedRate" stackId="a" fill="#10b981" radius={[0, 0, 4, 4]} name="Success (%)" />
+                  <Bar dataKey="failedRate" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} name="Failed (%)" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Recent Activity Section */}
-      <Card className="border-slate-200 shadow-sm overflow-hidden">
-        <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-4">
-          <CardTitle className="flex items-center gap-2 text-slate-800">
-            <Clock className="h-5 w-5 text-slate-500" />
-            Recent Activity
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <ul className="divide-y divide-slate-100">
-            {recentActivity.map((activity, index) => (
-              <li key={index} className="flex items-center justify-between p-4 sm:px-6 hover:bg-slate-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className={`h-2 w-2 rounded-full bg-current ${activity.color}`}></div>
-                  <span className="text-sm font-medium text-slate-700">{activity.text}</span>
-                </div>
-                <span className="text-xs text-slate-400 font-medium bg-slate-100 px-2 py-1 rounded-md">{activity.time}</span>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
     </div>
   );
 }

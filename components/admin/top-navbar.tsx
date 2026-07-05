@@ -18,17 +18,23 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function TopNavbar() {
   const pathname = usePathname();
-  const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string; role: string; avatar?: string } | null>(null);
 
   useEffect(() => {
-    const userCookie = Cookies.get("user");
-    if (userCookie) {
-      try {
-        setUser(JSON.parse(userCookie));
-      } catch (e) {
-        console.error("Failed to parse user cookie", e);
+    const loadUser = () => {
+      const userCookie = Cookies.get("user");
+      if (userCookie) {
+        try {
+          setUser(JSON.parse(userCookie));
+        } catch (e) {
+          console.error("Failed to parse user cookie", e);
+        }
       }
-    }
+    };
+    
+    loadUser();
+    window.addEventListener("profileUpdated", loadUser);
+    return () => window.removeEventListener("profileUpdated", loadUser);
   }, []);
   const router = useRouter();
   

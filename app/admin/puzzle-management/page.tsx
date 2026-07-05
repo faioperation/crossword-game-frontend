@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { apiGet, apiDelete } from "@/lib/apiClient";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Filter, Edit, Eye, Archive, Download, CalendarDays, Puzzle, CheckCircle2, Trash2 } from "lucide-react";
+import { Plus, Search, Filter, Edit, Eye, Archive, Download, CalendarDays, Puzzle, CheckCircle2, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function PuzzleManagementPage() {
@@ -16,16 +18,59 @@ export default function PuzzleManagementPage() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [dateFilter, setDateFilter] = useState("");
 
-  const initialPuzzles = [
-    { id: "PZ-001", title: "Daily Mini Crossword", date: "2026-06-26", status: "Published", difficulty: "Easy", cluesCount: 12 },
-    { id: "PZ-002", title: "Weekend Special", date: "2026-06-27", status: "Draft", difficulty: "Medium", cluesCount: 15 },
-    { id: "PZ-003", title: "Flash Puzzle", date: "2026-06-28", status: "Draft", difficulty: "Hard", cluesCount: 18 },
-  ];
-  const [puzzles, setPuzzles] = useState(initialPuzzles);
+  const [puzzles, setPuzzles] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const fetchPuzzles = async () => {
+      try {
+        setIsLoading(true);
+        const res = await apiGet<any>("/system-owner/puzzle/all");
+        if (res.success && res.data) {
+          const formattedPuzzles = res.data.map((p: any) => ({
+            id: p.id,
+            displayId: p.displayId,
+            title: p.title,
+            date: p.publishDate,
+            status: p.status.charAt(0).toUpperCase() + p.status.slice(1).toLowerCase(),
+            difficulty: p.difficulty,
+            cluesCount: p.totalClues
+          }));
+          setPuzzles(formattedPuzzles);
+        }
+      } catch (error) {
+        console.error("Failed to fetch puzzles", error);
+        toast.error("Failed to load puzzles.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPuzzles();
+  }, []);
 
   const handleDelete = (id: string) => {
-    setPuzzles(prev => prev.filter(p => p.id !== id));
-    toast.success("Puzzle deleted successfully");
+    setDeleteId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    setIsDeleting(true);
+    try {
+      const res = await apiDelete<any>(`/system-owner/puzzle/${deleteId}`);
+      if (res.success) {
+        setPuzzles(prev => prev.filter(p => p.id !== deleteId));
+        toast.success(res.message || "Puzzle deleted successfully");
+      } else {
+        toast.error("Failed to delete puzzle.");
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || error.message || "Error deleting puzzle.");
+    } finally {
+      setIsDeleting(false);
+      setDeleteId(null);
+    }
   };
 
   const filteredPuzzles = puzzles.filter(p => {
@@ -43,6 +88,15 @@ export default function PuzzleManagementPage() {
       default: return <Badge variant="outline">{status}</Badge>;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mb-4" />
+        <p className="text-slate-500 font-medium">Loading puzzles...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -153,7 +207,7 @@ export default function PuzzleManagementPage() {
                     <TableCell className="py-4">
                       <div className="flex flex-col">
                         <span className="font-semibold text-slate-800 text-base">{puzzle.title}</span>
-                        <span className="text-xs text-slate-500 font-mono mt-0.5">{puzzle.id}</span>
+                        <span className="text-xs text-slate-500 font-mono mt-0.5">{puzzle.displayId || puzzle.id}</span>
                       </div>
                     </TableCell>
                     <TableCell className="py-4 font-medium text-slate-700">{puzzle.difficulty}</TableCell>
@@ -162,10 +216,10 @@ export default function PuzzleManagementPage() {
                     <TableCell className="py-4">{getStatusBadge(puzzle.status)}</TableCell>
                     <TableCell className="text-right py-4">
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="icon" className="text-slate-500 hover:text-indigo-600 hover:bg-indigo-50" title="Preview">
+                        <Button variant="ghost" size="icon" className="text-slate-500 hover:text-indigo-600 hover:bg-indigo-50" title="Preview" onClick={() => router.push(`/admin/puzzle-management/view/${puzzle.id}`)}>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-slate-500 hover:text-emerald-600 hover:bg-emerald-50" title="Edit" onClick={() => router.push("/admin/puzzle-management/create")}>
+                        <Button variant="ghost" size="icon" className="text-slate-500 hover:text-emerald-600 hover:bg-emerald-50" title="Edit" onClick={() => router.push(`/admin/puzzle-management/create?id=${puzzle.id}`)}>
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon" className="text-slate-500 hover:text-red-600 hover:bg-red-50" title="Delete" onClick={() => handleDelete(puzzle.id)}>
@@ -190,7 +244,7 @@ export default function PuzzleManagementPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <span className="font-semibold text-slate-800 text-base block">{puzzle.title}</span>
-                    <span className="text-xs text-slate-500 font-mono mt-0.5 block">{puzzle.id}</span>
+                    <span className="text-xs text-slate-500 font-mono mt-0.5 block">{puzzle.displayId || puzzle.id}</span>
                   </div>
                   <div>{getStatusBadge(puzzle.status)}</div>
                 </div>
@@ -209,10 +263,10 @@ export default function PuzzleManagementPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 mt-2">
-                  <Button variant="outline" size="sm" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 flex-1">
+                  <Button variant="outline" size="sm" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 flex-1" onClick={() => router.push(`/admin/puzzle-management/view/${puzzle.id}`)}>
                     <Eye className="h-4 w-4 mr-2" /> Preview
                   </Button>
-                  <Button variant="outline" size="sm" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 flex-1" onClick={() => router.push("/admin/puzzle-management/create")}>
+                  <Button variant="outline" size="sm" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 flex-1" onClick={() => router.push(`/admin/puzzle-management/create?id=${puzzle.id}`)}>
                     <Edit className="h-4 w-4 mr-2" /> Edit
                   </Button>
                   <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50 flex-1" onClick={() => handleDelete(puzzle.id)}>
@@ -231,6 +285,23 @@ export default function PuzzleManagementPage() {
           </div>
         </div>
       </Card>
+
+      <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Puzzle</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this puzzle? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteId(null)} disabled={isDeleting}>Cancel</Button>
+            <Button variant="destructive" className="bg-red-600 hover:bg-red-700 text-white" onClick={confirmDelete} disabled={isDeleting}>
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

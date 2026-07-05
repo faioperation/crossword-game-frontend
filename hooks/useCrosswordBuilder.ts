@@ -25,16 +25,25 @@ export function useCrosswordBuilder(initialSize: number = 5) {
 
   // Initialize empty grid
   useEffect(() => {
-    const newGrid: Cell[][] = [];
-    for (let r = 0; r < size; r++) {
-      const row: Cell[] = [];
-      for (let c = 0; c < size; c++) {
-        row.push({ row: r, col: c, isBlack: false, letter: "", clueNum: null });
+    setGrid((prev) => {
+      if (prev.length === size && prev[0]?.length === size) return prev;
+      const newGrid: Cell[][] = [];
+      for (let r = 0; r < size; r++) {
+        const row: Cell[] = [];
+        for (let c = 0; c < size; c++) {
+          row.push({ row: r, col: c, isBlack: false, letter: "", clueNum: null });
+        }
+        newGrid.push(row);
       }
-      newGrid.push(row);
-    }
-    setGrid(newGrid);
+      return newGrid;
+    });
   }, [size]);
+
+  const loadPuzzle = useCallback((newSize: number, newGrid: Cell[][], newClues: Clue[]) => {
+    setSize(newSize);
+    setGrid(newGrid);
+    setClues(newClues);
+  }, []);
 
   // Main processing engine
   const processGrid = useCallback((currentGrid: Cell[][], currentClues: Clue[]) => {
@@ -166,6 +175,7 @@ export function useCrosswordBuilder(initialSize: number = 5) {
     setCellLetter,
     updateClueText,
     getNextCell,
-    processGrid
+    processGrid,
+    loadPuzzle
   };
 }

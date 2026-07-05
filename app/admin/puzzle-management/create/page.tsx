@@ -1,25 +1,64 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Save, Eye, CheckCircle, AlertTriangle, ArrowLeft } from "lucide-react";
+import { Save, Eye, CheckCircle, AlertTriangle, ArrowLeft, Loader2 } from "lucide-react";
 import { useCrosswordBuilder } from "@/hooks/useCrosswordBuilder";
+import { apiPost, apiGet, apiPatch } from "@/lib/apiClient";
 
 export default function CreatePuzzlePage() {
   const router = useRouter();
-  const { size, setSize, grid, clues, toggleBlackCell, setCellLetter, updateClueText } = useCrosswordBuilder(5);
+  const searchParams = useSearchParams();
+  const puzzleId = searchParams.get("id");
+  const isEditing = !!puzzleId;
+  const [isFetching, setIsFetching] = useState(isEditing);
+
+  const { size, setSize, grid, clues, toggleBlackCell, setCellLetter, updateClueText, loadPuzzle } = useCrosswordBuilder(5);
   
   // Section 1 State
-  const [title, setTitle] = useState("Daily Mini Crossword");
+  const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [difficulty, setDifficulty] = useState("Easy");
   const [status, setStatus] = useState("Draft");
   const [prize, setPrize] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!puzzleId) return;
+
+    const fetchPuzzle = async () => {
+      try {
+        setIsFetching(true);
+        const res = await apiGet<any>(`/system-owner/puzzle/${puzzleId}`);
+        if (res.success && res.data) {
+          const p = res.data;
+          setTitle(p.title || "");
+          setDate(p.date || "");
+          setDifficulty(p.difficulty || "Easy");
+          setStatus(p.status ? p.status.charAt(0).toUpperCase() + p.status.slice(1).toLowerCase() : "Draft");
+          setPrize(p.prize || "");
+          
+          const safeClues = typeof p.clues === 'string' ? JSON.parse(p.clues) : (p.clues || []);
+          const safeGrid = typeof p.grid === 'string' ? JSON.parse(p.grid) : (p.grid || []);
+          
+          loadPuzzle(p.size, safeGrid, safeClues);
+        } else {
+          toast.error("Failed to load puzzle details.");
+        }
+      } catch (error) {
+        console.error("Fetch puzzle error", error);
+        toast.error("Error fetching puzzle for editing.");
+      } finally {
+        setIsFetching(false);
+      }
+    };
+    fetchPuzzle();
+  }, [puzzleId, loadPuzzle]);
 
   // Validation State
   const [errors, setErrors] = useState<string[]>([]);
@@ -52,25 +91,73 @@ export default function CreatePuzzlePage() {
     return newErrors.length === 0;
   };
 
-  const handlePublish = () => {
-    if (runValidation()) {
-      toast.success("Puzzle published successfully!");
-      router.push("/admin/puzzle-management");
-    } else {
+  const submitPuzzle = async (finalStatus: string) => {
+    if (finalStatus === "published" && !runValidation()) {
       toast.error("Validation failed. Please fix the errors below.");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const payload = {
+        title,
+        date,
+        difficulty,
+        status: finalStatus,
+        prize,
+        size,
+        grid: grid.map(row => row.map(cell => ({
+          isBlack: cell.isBlack,
+          letter: cell.letter || "",
+          clueNum: cell.clueNum || null
+        }))),
+        clues: clues.map(clue => ({
+          id: clue.id,
+          direction: clue.direction,
+          number: clue.number,
+          answer: clue.answer,
+          text: clue.text
+        }))
+      };
+
+      const endpoint = isEditing ? `/system-owner/puzzle/${puzzleId}` : "/system-owner/puzzle/create";
+      let response;
+      if (isEditing) {
+        response = await apiPatch<{ success: boolean; message: string }>(endpoint, payload);
+      } else {
+        response = await apiPost<{ success: boolean; message: string }>(endpoint, payload);
+      }
+      
+      toast.success(response.message || `Puzzle ${isEditing ? 'updated' : (finalStatus === 'published' ? 'published' : 'saved')} successfully!`);
+      router.push("/admin/puzzle-management");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || error.message || "Failed to save puzzle.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleSaveDraft = () => {
-    toast.success("Draft saved successfully!");
-    router.push("/admin/puzzle-management");
-  };
+  const handlePublish = () => submitPuzzle("published");
+  const handleSaveDraft = () => submitPuzzle("draft");
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, r: number, c: number) => {
-    if (e.key === "Backspace" && !grid[r][c].letter) {
-      // Logic to move back could go here
+    if (e.key === "Backspace" || e.key === "Delete") {
+      setCellLetter(r, c, "");
+    } else if (/^[a-zA-Z]$/.test(e.key)) {
+      e.preventDefault();
+      setCellLetter(r, c, e.key.toUpperCase());
     }
   };
+
+  if (isFetching) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mb-4" />
+        <p className="text-slate-500">Loading puzzle data...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500 w-full">
@@ -81,8 +168,8 @@ export default function CreatePuzzlePage() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Create Puzzle</h2>
-          <p className="text-slate-500 font-medium text-base mt-1">Design and publish a new mini crossword.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">{isEditing ? "Edit Puzzle" : "Create Puzzle"}</h2>
+          <p className="text-slate-500 font-medium text-base mt-1">{isEditing ? "Update existing puzzle details." : "Design and publish a new mini crossword."}</p>
         </div>
       </div>
 
@@ -99,7 +186,7 @@ export default function CreatePuzzlePage() {
             <CardContent className="p-6 grid sm:grid-cols-2 gap-6">
               <div className="flex flex-col gap-3">
                 <label className="text-sm font-semibold text-slate-700">Puzzle Title</label>
-                <Input value={title} onChange={e => setTitle(e.target.value)} className="bg-slate-50 border-slate-200" />
+                <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Enter puzzle title..." className="bg-slate-50 border-slate-200" />
               </div>
               <div className="flex flex-col gap-3">
                 <label className="text-sm font-semibold text-slate-700">Publish Date</label>
@@ -170,10 +257,15 @@ export default function CreatePuzzlePage() {
                       {!cell.isBlack && (
                         <input
                           type="text"
-                          maxLength={1}
                           className="w-full h-full text-center text-2xl sm:text-4xl font-bold uppercase focus:outline-none focus:bg-blue-50 caret-transparent cursor-pointer"
                           value={cell.letter}
-                          onChange={(e) => setCellLetter(r, c, e.target.value.toUpperCase())}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const lastChar = val.slice(-1).toUpperCase();
+                            if (/^[A-Z]$/.test(lastChar) || val === "") {
+                              setCellLetter(r, c, lastChar);
+                            }
+                          }}
                           onKeyDown={(e) => handleKeyDown(e, r, c)}
                           onDoubleClick={(e) => { e.stopPropagation(); toggleBlackCell(r, c); }}
                           onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); toggleBlackCell(r, c); }}
@@ -294,6 +386,9 @@ export default function CreatePuzzlePage() {
                             {cell.clueNum}
                           </span>
                         )}
+                        {!cell.isBlack && cell.letter && (
+                          <span className="text-sm font-bold text-slate-800 uppercase select-none">{cell.letter}</span>
+                        )}
                         {/* Note: Players don't see answers initially, but in preview we can hide them or show them faintly. Let's show empty for pure preview */}
                       </div>
                     ))
@@ -324,12 +419,16 @@ export default function CreatePuzzlePage() {
             
             {/* Section 7: Actions */}
             <CardFooter className="p-4 bg-slate-50 border-t border-slate-100 flex flex-col gap-3">
-              <Button onClick={runValidation} variant="outline" className="w-full border-slate-300 bg-white">
+              <Button onClick={runValidation} variant="outline" className="w-full border-slate-300 bg-white" disabled={isSubmitting}>
                 <CheckCircle className="h-4 w-4 mr-2" /> Validate Only
               </Button>
               <div className="flex gap-3 w-full">
-                <Button onClick={handleSaveDraft} variant="secondary" className="flex-1">Save Draft</Button>
-                <Button onClick={handlePublish} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white">Publish</Button>
+                <Button onClick={handleSaveDraft} variant="secondary" className="flex-1" disabled={isSubmitting}>
+                  {isSubmitting ? "Saving..." : "Save Draft"}
+                </Button>
+                <Button onClick={handlePublish} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white" disabled={isSubmitting}>
+                  {isSubmitting ? "Publishing..." : "Publish"}
+                </Button>
               </div>
             </CardFooter>
           </Card>

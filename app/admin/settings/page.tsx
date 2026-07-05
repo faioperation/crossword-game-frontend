@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -101,13 +102,67 @@ export default function SettingsPage() {
   };
 
   const [profileUrl, setProfileUrl] = useState<string | null>(null);
+  const [profileFile, setProfileFile] = useState<File | null>(null);
+  const [adminName, setAdminName] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
+
+  useEffect(() => {
+    const userCookie = Cookies.get("user");
+    if (userCookie) {
+      try {
+        const u = JSON.parse(userCookie);
+        setAdminName(u.name || "");
+        setAdminEmail(u.email || "");
+        if (u.avatar) setProfileUrl(u.avatar);
+      } catch (e) {}
+    }
+  }, []);
 
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
       setProfileUrl(url);
+      setProfileFile(file);
     }
+  };
+
+  const updateProfileMutation = useMutation({
+    mutationFn: (formData: FormData) => {
+      return apiPatch<any>("/system-owner/settings/profile", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    },
+    onSuccess: (data) => {
+      toast.success(data.message || "Profile updated successfully!");
+      
+      const userCookie = Cookies.get("user");
+      if (userCookie) {
+        try {
+          const u = JSON.parse(userCookie);
+          u.name = adminName;
+          if (data.data?.avatar) {
+            u.avatar = data.data.avatar;
+            setProfileUrl(data.data.avatar);
+          }
+          Cookies.set("user", JSON.stringify(u));
+          window.dispatchEvent(new Event("profileUpdated"));
+        } catch (e) {}
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to update profile");
+    },
+  });
+
+  const handleProfileSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("name", adminName);
+    if (profileFile) {
+      formData.append("avatar", profileFile);
+    }
+    updateProfileMutation.mutate(formData);
   };
 
   return (
@@ -157,13 +212,13 @@ export default function SettingsPage() {
               <div className="flex flex-col gap-3">
                 <label className="text-sm font-semibold text-slate-700 block">Platform Logo</label>
                 <div className="flex items-center gap-6">
-                  <div className="h-20 w-20 rounded-xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden">
-                    {logoUrl ? (
-                      <img src={logoUrl.startsWith('blob:') || logoUrl.startsWith('http') ? logoUrl : `${process.env.NEXT_PUBLIC_API_URL || ''}${logoUrl.startsWith('/') ? '' : '/'}${logoUrl}`} alt="Logo Preview" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                    ) : (
-                      <ImageIcon className="h-8 w-8 text-slate-400" />
-                    )}
-                  </div>
+                    <div className="h-20 w-20 rounded-xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden">
+                      {logoUrl ? (
+                        <img src={logoUrl.startsWith('blob:') || logoUrl.startsWith('http') ? logoUrl : `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/api\/?$/, '')}${logoUrl.replace(/\\/g, '/').startsWith('/') ? '' : '/'}${logoUrl.replace(/\\/g, '/')}`} alt="Logo Preview" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      ) : (
+                        <ImageIcon className="h-8 w-8 text-slate-400" />
+                      )}
+                    </div>
                   <div className="flex flex-col gap-2">
                     <input type="file" id="logo-upload" className="hidden" accept="image/*" onChange={handleLogoChange} />
                     <Button type="button" variant="outline" className="border-slate-200 hover:bg-slate-50 h-10 w-fit" asChild>
@@ -216,10 +271,16 @@ export default function SettingsPage() {
               Update your personal profile and security settings.
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-6 flex flex-col gap-8 flex-1">
+          <CardContent className="p-6 flex flex-col gap-8 flex-1 relative">
             
+            {updateProfileMutation.isPending && (
+              <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
+                <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+              </div>
+            )}
+
             {/* Profile */}
-            <div className="space-y-6">
+            <form onSubmit={handleProfileSubmit} className="space-y-6">
               <div className="border-b border-slate-100 pb-2">
                 <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
                   Profile Details
@@ -233,14 +294,14 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-6">
                     <div className="h-20 w-20 rounded-full bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden">
                       {profileUrl ? (
-                        <img src={profileUrl} alt="Profile Preview" className="w-full h-full object-cover" />
+                        <img src={profileUrl.startsWith('blob:') || profileUrl.startsWith('http') ? profileUrl : `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/api\/?$/, '')}${profileUrl.replace(/\\/g, '/').startsWith('/') ? '' : '/'}${profileUrl.replace(/\\/g, '/')}`} alt="Profile Preview" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                       ) : (
                         <User className="h-8 w-8 text-slate-400" />
                       )}
                     </div>
                     <div className="flex flex-col gap-2">
                       <input type="file" id="profile-upload" className="hidden" accept="image/*" onChange={handleProfileChange} />
-                      <Button variant="outline" className="border-slate-200 hover:bg-slate-50 h-10 w-fit" asChild>
+                      <Button type="button" variant="outline" className="border-slate-200 hover:bg-slate-50 h-10 w-fit" asChild>
                         <label htmlFor="profile-upload" className="cursor-pointer flex items-center">
                           <Upload className="h-4 w-4 mr-2 text-slate-500" /> Upload Profile Image
                         </label>
@@ -253,8 +314,10 @@ export default function SettingsPage() {
                   <label htmlFor="admin-name" className="text-sm font-semibold text-slate-700">Full Name</label>
                   <Input 
                     id="admin-name" 
-                    defaultValue="Admin User" 
+                    value={adminName}
+                    onChange={(e) => setAdminName(e.target.value)}
                     className="h-11 text-base bg-slate-50 border-slate-200 focus-visible:ring-emerald-500"
+                    required
                   />
                 </div>
                 <div className="flex flex-col gap-3">
@@ -262,18 +325,24 @@ export default function SettingsPage() {
                   <Input 
                     id="admin-email" 
                     type="email"
-                    defaultValue="admin@example.com" 
-                    className="h-11 text-base bg-slate-50 border-slate-200 focus-visible:ring-emerald-500"
+                    value={adminEmail} 
+                    disabled
+                    className="h-11 text-base bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed"
                   />
                 </div>
                 <div className="pt-2">
-                  <Button onClick={() => toast.success("Profile updated successfully!")} className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 w-fit">
-                    <Save className="h-4 w-4 mr-2" />
+                  <Button type="submit" disabled={updateProfileMutation.isPending} className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 w-fit">
+                    {updateProfileMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4 mr-2" />
+                    )}
                     Update Profile
                   </Button>
                 </div>
               </div>
-            </div>
+            </form>
+
 
           </CardContent>
         </Card>
