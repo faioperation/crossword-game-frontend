@@ -33,13 +33,22 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
 
   useEffect(() => {
     try {
+      const d = new Date();
+      const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      
       const saved = localStorage.getItem(`cw_prog_${puzzle.id}`);
       if (saved) {
         const decoded = JSON.parse(atob(saved));
-        setGrid(puzzle.grid.map((row, r) => 
-          row.map((cell, c) => ({ ...cell, value: decoded.gridValues?.[r]?.[c] || "" }))
-        ));
-        if (decoded.seconds) setSeconds(decoded.seconds);
+        if (decoded.date === today) {
+          setGrid(puzzle.grid.map((row, r) => 
+            row.map((cell, c) => ({ ...cell, value: decoded.gridValues?.[r]?.[c] || "" }))
+          ));
+          if (decoded.seconds) setSeconds(decoded.seconds);
+        } else {
+          localStorage.removeItem(`cw_prog_${puzzle.id}`);
+          setGrid(puzzle.grid.map(row => row.map(cell => ({ ...cell, value: "" }))));
+          setSeconds(0);
+        }
       } else {
         setGrid(puzzle.grid.map(row => row.map(cell => ({ ...cell, value: "" }))));
         setSeconds(0);
@@ -63,8 +72,11 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
   useEffect(() => {
     if (!isRestored || !grid || grid.length === 0) return;
     try {
+      const d = new Date();
+      const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      
       const gridValues = grid.map(row => row.map(cell => cell.value));
-      const payload = JSON.stringify({ gridValues, seconds });
+      const payload = JSON.stringify({ gridValues, seconds, date: today });
       const encoded = btoa(payload);
       localStorage.setItem(`cw_prog_${puzzle.id}`, encoded);
     } catch (e) {
