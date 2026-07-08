@@ -16,6 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Rules } from "../public/Rules";
+import { AdSlot } from "@/components/ads/AdSlot";
 
 type CrosswordGameProps = {
   puzzle: Puzzle;
@@ -272,8 +273,18 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto flex flex-col gap-6">
+    <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 relative">
       
+      {/* Left Sidebar Ad - Positioned outside the max-width container */}
+      <div className="hidden 2xl:block absolute top-0 -left-[180px]">
+        <AdSlot position="sidebar-left" />
+      </div>
+
+      {/* Right Sidebar Ad - Positioned outside the max-width container */}
+      <div className="hidden 2xl:block absolute top-0 -right-[180px]">
+        <AdSlot position="sidebar-right" />
+      </div>
+
       {/* 3-Column Layout */}
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 w-full items-start">
         
@@ -356,6 +367,9 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
           <div className="w-full mt-4">
             <VirtualKeyboard onKeyPress={handleVirtualKeyPress} />
           </div>
+
+          {/* Mid Ad Banner */}
+          <AdSlot position="mid" />
         </div>
         
         {/* Right Column: Down Clues */}

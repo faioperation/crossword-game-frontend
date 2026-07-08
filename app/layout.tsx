@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import { Toaster } from "sonner";
 import { Providers } from "@/components/providers";
+import { AdProvider } from "@/components/ads/AdProvider";
 import "./globals.css";
 
 const outfitSans = Outfit({
@@ -16,7 +17,10 @@ const outfitMono = Outfit({
 
 export const metadata: Metadata = {
   title: "Heritage Stackers Daily Mini Crossword",
-  description: "A mini crossword game platform ",
+  description: "A mini crossword game platform",
+  icons: {
+    icon: "/assets/logo.jpeg",
+  },
 };
 
 export default function RootLayout({
@@ -30,6 +34,7 @@ export default function RootLayout({
       className={`${outfitSans.variable} ${outfitMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <AdProvider />
         <Providers>
           {children}
           <Toaster position="top-center" richColors toastOptions={{ className: "text-base font-medium py-3 px-4" }} />
