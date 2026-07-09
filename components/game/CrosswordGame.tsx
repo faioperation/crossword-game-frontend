@@ -121,6 +121,10 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
 
   const wordBounds = getWordBounds();
 
+  const activeClue = wordBounds ? puzzle.clues.find(
+    c => c.direction === direction && c.row === wordBounds.startRow && c.col === wordBounds.startCol
+  ) : null;
+
   // Progress Calculation
   let filledCount = 0;
   let totalCells = 0;
@@ -348,6 +352,24 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
             </div>
           </div>
 
+          {/* Active Clue Bar (Mobile) */}
+          <div className="lg:hidden sticky top-[65px] sm:top-[88px] z-40 mb-4 bg-white/95 backdrop-blur-sm border border-slate-200 shadow-md rounded-xl p-3 flex items-center justify-between transition-all duration-300">
+            {activeClue ? (
+              <div className="flex items-center gap-3 w-full">
+                <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-[#D4AF37] text-white font-bold text-sm shadow-sm">
+                  {activeClue.number}{activeClue.direction === 'across' ? 'A' : 'D'}
+                </div>
+                <div className="text-slate-800 text-sm sm:text-base font-semibold">
+                  {activeClue.text}
+                </div>
+              </div>
+            ) : (
+              <div className="text-slate-500 text-sm italic text-center w-full">
+                Select a cell to see the clue
+              </div>
+            )}
+          </div>
+
           {/* Grid */}
           <div className="w-full">
             <CrosswordGrid 
@@ -369,7 +391,7 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
           </div>
 
           {/* Mid Ad Banner */}
-          <AdSlot position="mid" />
+          {/* <AdSlot position="mid" /> */}
         </div>
         
         {/* Right Column: Down Clues */}

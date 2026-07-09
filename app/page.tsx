@@ -139,58 +139,58 @@ export default function Home() {
         {/* Today's Prize Banner */}
         <section className="w-full">
           {isLoading ? (
-            <div className="bg-slate-900 rounded-2xl p-6 sm:p-10 shadow-2xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6 w-full">
-                <Skeleton className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-slate-800 shrink-0" />
-                <div className="flex flex-col items-center md:items-start w-full space-y-4">
-                  <Skeleton className="h-6 w-40 rounded-full bg-slate-800" />
-                  <Skeleton className="h-10 sm:h-12 w-3/4 max-w-md bg-slate-800" />
+            <div className="bg-slate-900 rounded-2xl p-4 sm:p-10 shadow-2xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
+              <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-3 sm:gap-6 w-full">
+                <Skeleton className="w-16 h-16 sm:w-32 sm:h-32 rounded-2xl bg-slate-800 shrink-0" />
+                <div className="flex flex-col items-center md:items-start w-full space-y-2 sm:space-y-4">
+                  <Skeleton className="h-5 sm:h-6 w-32 sm:w-40 rounded-full bg-slate-800" />
+                  <Skeleton className="h-7 sm:h-12 w-3/4 max-w-md bg-slate-800" />
                   <div className="space-y-2 w-full max-w-lg flex flex-col items-center md:items-start">
-                    <Skeleton className="h-4 w-full bg-slate-800" />
-                    <Skeleton className="h-4 w-5/6 bg-slate-800" />
+                    <Skeleton className="h-3 sm:h-4 w-full bg-slate-800" />
+                    <Skeleton className="h-3 sm:h-4 w-5/6 bg-slate-800" />
                   </div>
                 </div>
               </div>
-              <div className="shrink-0 mt-4 md:mt-0">
-                <Skeleton className="w-[140px] h-[120px] rounded-xl bg-slate-800" />
+              <div className="shrink-0 mt-2 sm:mt-4 md:mt-0">
+                <Skeleton className="w-[110px] h-[90px] sm:w-[140px] sm:h-[120px] rounded-xl bg-slate-800" />
               </div>
             </div>
           ) : (
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 sm:p-10 text-white shadow-2xl border border-slate-700/50 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-4 sm:p-10 text-white shadow-2xl border border-slate-700/50 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
               <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-[#D4AF37] opacity-10 rounded-full blur-3xl"></div>
               <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-48 h-48 bg-green-400 opacity-10 rounded-full blur-2xl"></div>
 
-              <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6">
+              <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-3 sm:gap-6">
                 {prizeInfo.image && (
                   <div className="shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                       src={getImageUrl(prizeInfo.image)} 
                       alt={prizeInfo.name}
-                      className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-2xl border border-[#D4AF37]/40 shadow-xl bg-slate-900"
+                      className="w-16 h-16 sm:w-32 sm:h-32 object-cover rounded-2xl border border-[#D4AF37]/40 shadow-xl bg-slate-900"
                     />
                   </div>
                 )}
                 <div className="flex flex-col items-center md:items-start">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-950/50 rounded-full text-slate-300 text-xs sm:text-sm font-bold tracking-widest uppercase mb-3 border border-slate-700/50">
-                    <Gift className="w-4 h-4 text-[#D4AF37]" />
+                  <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2 py-0.5 sm:px-3 sm:py-1 bg-slate-950/50 rounded-full text-slate-300 text-[10px] sm:text-sm font-bold tracking-widest uppercase mb-1.5 sm:mb-3 border border-slate-700/50">
+                    <Gift className="w-3 h-3 sm:w-4 sm:h-4 text-[#D4AF37]" />
                     Today's Featured Prize
                   </div>
-                  <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#FFE87C] via-white to-[#D4AF37]">
+                  <h2 className="text-2xl sm:text-5xl font-extrabold tracking-tight mb-1.5 sm:mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#FFE87C] via-white to-[#D4AF37]">
                     {prizeInfo.name}
                   </h2>
-                  <p className="text-slate-300 font-medium max-w-lg text-sm sm:text-base leading-relaxed">
+                  <p className="text-slate-300 font-medium max-w-lg text-xs sm:text-base leading-snug sm:leading-relaxed">
                     {prizeInfo.description}
                   </p>
                 </div>
               </div>
 
-              <div className="relative z-10 flex-shrink-0 mt-4 md:mt-0">
-                <div className="bg-gradient-to-b from-[#FFE87C] to-[#D4AF37] p-1 rounded-2xl shadow-xl transform rotate-3 hover:rotate-0 transition duration-300">
-                  <div className="bg-slate-900 rounded-xl px-6 py-5 flex flex-col items-center justify-center border border-[#D4AF37]/30 text-center min-w-[140px]">
-                    <span className="text-[#D4AF37] font-bold tracking-widest text-[10px] uppercase mb-1">Guaranteed</span>
-                    <span className="text-3xl font-black text-white">1 Winner</span>
-                    <span className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-1">Every Day</span>
+              <div className="relative z-10 flex-shrink-0 mt-2 sm:mt-4 md:mt-0">
+                <div className="bg-gradient-to-b from-[#FFE87C] to-[#D4AF37] p-0.5 sm:p-1 rounded-xl sm:rounded-2xl shadow-xl transform rotate-3 hover:rotate-0 transition duration-300">
+                  <div className="bg-slate-900 rounded-[10px] sm:rounded-xl px-4 py-3 sm:px-6 sm:py-5 flex flex-col items-center justify-center border border-[#D4AF37]/30 text-center min-w-[110px] sm:min-w-[140px]">
+                    <span className="text-[#D4AF37] font-bold tracking-widest text-[8px] sm:text-[10px] uppercase mb-0.5 sm:mb-1">Guaranteed</span>
+                    <span className="text-xl sm:text-3xl font-black text-white">1 Winner</span>
+                    <span className="text-slate-400 font-bold text-[8px] sm:text-[10px] uppercase tracking-widest mt-0.5 sm:mt-1">Every Day</span>
                   </div>
                 </div>
               </div>

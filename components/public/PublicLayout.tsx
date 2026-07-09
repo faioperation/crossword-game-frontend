@@ -15,7 +15,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
       <AdSlot position="footer" />
       <Footer />
-      <AdSlot position="mobile" />
+      {/* <AdSlot position="mobile" /> */}
     </div>
   );
 }
