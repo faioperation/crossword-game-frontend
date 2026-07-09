@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getImageUrl } from "@/lib/utils";
 
 export function TopNavbar() {
   const pathname = usePathname();
@@ -70,7 +71,7 @@ export function TopNavbar() {
           <DropdownMenuTrigger asChild>
             <button className="rounded-full outline-none  focus-visible:ring-2 focus-visible:ring-slate-400 transition-transform hover:scale-105">
               <Avatar className="h-11 w-11 border-2 border-slate-300 ring-2 ring-slate-100 ring-offset-2 shadow-sm">
-                <AvatarImage src="https://i.pravatar.cc/150?u=admin" alt="Admin" />
+                <AvatarImage src={getImageUrl(user?.avatar) || ""} alt={user?.name || "Admin"} />
                 <AvatarFallback className="bg-slate-100 text-slate-600 ">
                   <UserCircle className="h-6 w-6" />
                 </AvatarFallback>

@@ -18,9 +18,7 @@ const outfitMono = Outfit({
 export const metadata: Metadata = {
   title: "Heritage Stackers Daily Mini Crossword",
   description: "A mini crossword game platform",
-  icons: {
-    icon: "/assets/logo.jpeg",
-  },
+
 };
 
 export default function RootLayout({

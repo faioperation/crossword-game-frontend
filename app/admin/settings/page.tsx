@@ -13,8 +13,6 @@ import { apiGet, apiPatch, apiPost } from "@/lib/apiClient";
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
   const [websiteName, setWebsiteName] = useState("");
   const [supportEmail, setSupportEmail] = useState("");
 
@@ -27,9 +25,6 @@ export default function SettingsPage() {
     if (settingsData?.data) {
       setWebsiteName(settingsData.data.websiteName || "");
       setSupportEmail(settingsData.data.supportEmail || "");
-      if (settingsData.data.logo) {
-        setLogoUrl(settingsData.data.logo);
-      }
     }
   }, [settingsData]);
 
@@ -53,9 +48,6 @@ export default function SettingsPage() {
     const formData = new FormData();
     formData.append("websiteName", websiteName);
     formData.append("supportEmail", supportEmail);
-    if (logoFile) {
-      formData.append("logo", logoFile);
-    }
     updateSettingsMutation.mutate(formData);
   };
 
@@ -92,17 +84,9 @@ export default function SettingsPage() {
     changePasswordMutation.mutate();
   };
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setLogoUrl(url);
-      setLogoFile(file);
-    }
-  };
-
   const [profileUrl, setProfileUrl] = useState<string | null>(null);
   const [profileFile, setProfileFile] = useState<File | null>(null);
+  const [profileError, setProfileError] = useState(false);
   const [adminName, setAdminName] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
 
@@ -124,6 +108,7 @@ export default function SettingsPage() {
       const url = URL.createObjectURL(file);
       setProfileUrl(url);
       setProfileFile(file);
+      setProfileError(false);
     }
   };
 
@@ -208,29 +193,6 @@ export default function SettingsPage() {
                 />
               </div>
 
-              {/* Logo */}
-              <div className="flex flex-col gap-3">
-                <label className="text-sm font-semibold text-slate-700 block">Platform Logo</label>
-                <div className="flex items-center gap-6">
-                    <div className="h-20 w-20 rounded-xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden">
-                      {logoUrl ? (
-                        <img src={logoUrl.startsWith('blob:') || logoUrl.startsWith('http') ? logoUrl : `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/api\/?$/, '')}${logoUrl.replace(/\\/g, '/').startsWith('/') ? '' : '/'}${logoUrl.replace(/\\/g, '/')}`} alt="Logo Preview" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                      ) : (
-                        <ImageIcon className="h-8 w-8 text-slate-400" />
-                      )}
-                    </div>
-                  <div className="flex flex-col gap-2">
-                    <input type="file" id="logo-upload" className="hidden" accept="image/*" onChange={handleLogoChange} />
-                    <Button type="button" variant="outline" className="border-slate-200 hover:bg-slate-50 h-10 w-fit" asChild>
-                      <label htmlFor="logo-upload" className="cursor-pointer flex items-center">
-                        <Upload className="h-4 w-4 mr-2 text-slate-500" /> Upload New Logo
-                      </label>
-                    </Button>
-                    <span className="text-xs text-slate-400">Recommended size: 256x256px. Max 2MB.</span>
-                  </div>
-                </div>
-              </div>
-
               {/* Support Email */}
               <div className="flex flex-col gap-3">
                 <label htmlFor="support-email" className="text-sm font-semibold text-slate-700">Support Email</label>
@@ -293,8 +255,14 @@ export default function SettingsPage() {
                   <label className="text-sm font-semibold text-slate-700 block">Profile Image</label>
                   <div className="flex items-center gap-6">
                     <div className="h-20 w-20 rounded-full bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden">
-                      {profileUrl ? (
-                        <img src={profileUrl.startsWith('blob:') || profileUrl.startsWith('http') ? profileUrl : `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/api\/?$/, '')}${profileUrl.replace(/\\/g, '/').startsWith('/') ? '' : '/'}${profileUrl.replace(/\\/g, '/')}`} alt="Profile Preview" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      {profileUrl && !profileError ? (
+                        <img 
+                          key={profileUrl}
+                          src={profileUrl.startsWith('blob:') || profileUrl.startsWith('http') ? profileUrl : `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/api\/?$/, '')}${profileUrl.replace(/\\/g, '/').startsWith('/') ? '' : '/'}${profileUrl.replace(/\\/g, '/')}`} 
+                          alt="Profile Preview" 
+                          className="w-full h-full object-cover" 
+                          onError={() => setProfileError(true)} 
+                        />
                       ) : (
                         <User className="h-8 w-8 text-slate-400" />
                       )}
