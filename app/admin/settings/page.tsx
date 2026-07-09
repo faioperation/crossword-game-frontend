@@ -136,12 +136,46 @@ export default function SettingsPage() {
     },
   });
 
-  const handleProfileSubmit = (e: React.FormEvent) => {
+  const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append("name", adminName);
     if (profileFile) {
-      formData.append("avatar", profileFile);
+      const base64Image = await new Promise<string>((resolve, reject) => {
+        const img = new Image();
+        img.src = URL.createObjectURL(profileFile);
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+          const MAX_DIM = 400;
+
+          if (width > height && width > MAX_DIM) {
+            height *= MAX_DIM / width;
+            width = MAX_DIM;
+          } else if (height > MAX_DIM) {
+            width *= MAX_DIM / height;
+            height = MAX_DIM;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+            resolve(dataUrl);
+          } else {
+            reject(new Error("Failed to compress image"));
+          }
+          URL.revokeObjectURL(img.src);
+        };
+        img.onerror = error => {
+          URL.revokeObjectURL(img.src);
+          reject(error);
+        };
+      });
+      formData.append("avatar", base64Image);
     }
     updateProfileMutation.mutate(formData);
   };
