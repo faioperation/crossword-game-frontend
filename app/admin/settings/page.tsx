@@ -30,9 +30,7 @@ export default function SettingsPage() {
 
   const updateSettingsMutation = useMutation({
     mutationFn: (formData: FormData) => {
-      return apiPatch<any>("/system-owner/settings", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      return apiPatch<any>("/system-owner/settings", formData);
     },
     onSuccess: (data) => {
       toast.success(data.message || "General settings saved successfully!");
@@ -114,9 +112,7 @@ export default function SettingsPage() {
 
   const updateProfileMutation = useMutation({
     mutationFn: (formData: FormData) => {
-      return apiPatch<any>("/system-owner/settings/profile", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      return apiPatch<any>("/system-owner/settings/profile", formData);
     },
     onSuccess: (data) => {
       toast.success(data.message || "Profile updated successfully!");

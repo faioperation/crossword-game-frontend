@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Eye, ArrowLeft, Loader2 } from "lucide-react";
+import { Eye, ArrowLeft, Loader2, ImageIcon } from "lucide-react";
 import { apiGet } from "@/lib/apiClient";
+import { getImageUrl } from "@/lib/utils";
 
 export default function ViewPuzzlePage() {
   const router = useRouter();
@@ -106,6 +107,30 @@ export default function ViewPuzzlePage() {
               <div className="flex flex-col gap-3">
                 <label className="text-sm font-semibold text-slate-700">Daily Prize</label>
                 <Input value={puzzle.prize || ""} disabled className="bg-slate-100 border-slate-200 text-slate-700 cursor-not-allowed" />
+              </div>
+              <div className="flex flex-col gap-3">
+                <label className="text-sm font-semibold text-slate-700 block">Prize Image</label>
+                <div className="h-20 w-20 rounded-xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center overflow-hidden">
+                  {puzzle.image ? (
+                    <img 
+                      src={getImageUrl(puzzle.image) || puzzle.image} 
+                      alt="Prize Preview" 
+                      className="w-full h-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <ImageIcon className="h-8 w-8 text-slate-400" />
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-col gap-3 sm:col-span-2">
+                <label className="text-sm font-semibold text-slate-700">Prize Description</label>
+                <Textarea 
+                  value={puzzle.description || ""} 
+                  disabled 
+                  placeholder="No description provided."
+                  className="resize-none h-20 bg-slate-100 border-slate-200 text-slate-700 cursor-not-allowed text-sm" 
+                />
               </div>
             </CardContent>
           </Card>

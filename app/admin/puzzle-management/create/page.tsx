@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Save, Eye, CheckCircle, AlertTriangle, ArrowLeft, Loader2 } from "lucide-react";
+import { Save, Eye, CheckCircle, AlertTriangle, ArrowLeft, Loader2, Upload, ImageIcon } from "lucide-react";
+import { getImageUrl } from "@/lib/utils";
 import { useCrosswordBuilder } from "@/hooks/useCrosswordBuilder";
 import { apiPost, apiGet, apiPatch } from "@/lib/apiClient";
 
@@ -26,6 +27,10 @@ function CreatePuzzleContent() {
   const [difficulty, setDifficulty] = useState("Easy");
   const [status, setStatus] = useState("Draft");
   const [prize, setPrize] = useState("");
+  const [prizeDescription, setPrizeDescription] = useState("");
+  const [prizeImageUrl, setPrizeImageUrl] = useState<string | null>(null);
+  const [prizeImageFile, setPrizeImageFile] = useState<File | null>(null);
+  const [prizeImageError, setPrizeImageError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -42,6 +47,10 @@ function CreatePuzzleContent() {
           setDifficulty(p.difficulty || "Easy");
           setStatus(p.status ? p.status.charAt(0).toUpperCase() + p.status.slice(1).toLowerCase() : "Draft");
           setPrize(p.prize || "");
+          setPrizeDescription(p.description || "");
+          if (p.image) {
+            setPrizeImageUrl(p.image);
+          }
           
           const safeClues = typeof p.clues === 'string' ? JSON.parse(p.clues) : (p.clues || []);
           const safeGrid = typeof p.grid === 'string' ? JSON.parse(p.grid) : (p.grid || []);
@@ -100,33 +109,72 @@ function CreatePuzzleContent() {
     setIsSubmitting(true);
     
     try {
-      const payload = {
-        title,
-        date,
-        difficulty,
-        status: finalStatus,
-        prize,
-        size,
-        grid: grid.map(row => row.map(cell => ({
-          isBlack: cell.isBlack,
-          letter: cell.letter || "",
-          clueNum: cell.clueNum || null
-        }))),
-        clues: clues.map(clue => ({
-          id: clue.id,
-          direction: clue.direction,
-          number: clue.number,
-          answer: clue.answer,
-          text: clue.text
-        }))
-      };
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("date", date);
+      formData.append("difficulty", difficulty);
+      formData.append("status", finalStatus);
+      formData.append("prize", prize);
+      formData.append("description", prizeDescription);
+      formData.append("size", String(size));
+      formData.append("grid", JSON.stringify(grid.map(row => row.map(cell => ({
+        isBlack: cell.isBlack,
+        letter: cell.letter || "",
+        clueNum: cell.clueNum || null
+      })))));
+      formData.append("clues", JSON.stringify(clues.map(clue => ({
+        id: clue.id,
+        direction: clue.direction,
+        number: clue.number,
+        answer: clue.answer,
+        text: clue.text
+      }))));
+
+      if (prizeImageFile) {
+        const base64Image = await new Promise<string>((resolve, reject) => {
+          const img = new Image();
+          img.src = URL.createObjectURL(prizeImageFile);
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            let width = img.width;
+            let height = img.height;
+            const MAX_DIM = 600;
+
+            if (width > height && width > MAX_DIM) {
+              height *= MAX_DIM / width;
+              width = MAX_DIM;
+            } else if (height > MAX_DIM) {
+              width *= MAX_DIM / height;
+              height = MAX_DIM;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height);
+              const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+              resolve(dataUrl);
+            } else {
+              reject(new Error("Failed to compress image"));
+            }
+            URL.revokeObjectURL(img.src);
+          };
+          img.onerror = error => {
+            URL.revokeObjectURL(img.src);
+            reject(error);
+          };
+        });
+        formData.append("image", base64Image);
+      }
 
       const endpoint = isEditing ? `/system-owner/puzzle/${puzzleId}` : "/system-owner/puzzle/create";
+      
       let response;
       if (isEditing) {
-        response = await apiPatch<{ success: boolean; message: string }>(endpoint, payload);
+        response = await apiPatch<{ success: boolean; message: string }>(endpoint, formData);
       } else {
-        response = await apiPost<{ success: boolean; message: string }>(endpoint, payload);
+        response = await apiPost<{ success: boolean; message: string }>(endpoint, formData);
       }
       
       toast.success(response.message || `Puzzle ${isEditing ? 'updated' : (finalStatus === 'published' ? 'published' : 'saved')} successfully!`);
@@ -208,8 +256,57 @@ function CreatePuzzleContent() {
                 </select>
               </div>
               <div className="flex flex-col gap-3">
-                <label className="text-sm font-semibold text-slate-700">Daily Prize</label>
+                <label className="text-sm font-semibold text-slate-700">Daily Prize Name</label>
                 <Input value={prize} onChange={e => setPrize(e.target.value)} placeholder="e.g. Silver Eagle" className="bg-slate-50 border-slate-200" />
+              </div>
+              <div className="flex flex-col gap-3">
+                <label className="text-sm font-semibold text-slate-700 block">Prize Image</label>
+                <div className="flex items-center gap-6">
+                  <div className="h-20 w-20 rounded-xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden">
+                    {prizeImageUrl && !prizeImageError ? (
+                      <img 
+                        key={prizeImageUrl}
+                        src={getImageUrl(prizeImageUrl) || prizeImageUrl} 
+                        alt="Prize Preview" 
+                        className="w-full h-full object-cover" 
+                        onError={() => setPrizeImageError(true)} 
+                      />
+                    ) : (
+                      <ImageIcon className="h-8 w-8 text-slate-400" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <input 
+                      type="file" 
+                      id="prize-image-upload" 
+                      className="hidden" 
+                      accept="image/*" 
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setPrizeImageUrl(URL.createObjectURL(file));
+                          setPrizeImageFile(file);
+                          setPrizeImageError(false);
+                        }
+                      }} 
+                    />
+                    <Button type="button" variant="outline" className="border-slate-200 hover:bg-slate-50 h-10 w-fit" asChild>
+                      <label htmlFor="prize-image-upload" className="cursor-pointer flex items-center">
+                        <Upload className="h-4 w-4 mr-2 text-slate-500" /> Upload Prize Image
+                      </label>
+                    </Button>
+                    <span className="text-xs text-slate-400">Max size 2MB.</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-3 sm:col-span-2">
+                <label className="text-sm font-semibold text-slate-700">Prize Description</label>
+                <Textarea 
+                  value={prizeDescription} 
+                  onChange={e => setPrizeDescription(e.target.value)} 
+                  placeholder="Enter a description for the prize..." 
+                  className="resize-none h-20 bg-slate-50 border-slate-200 text-sm"
+                />
               </div>
             </CardContent>
           </Card>

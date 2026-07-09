@@ -364,7 +364,7 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
           </div>
 
           {/* Virtual Keyboard */}
-          <div className="w-full mt-4">
+          <div className="w-full mt-4 hidden md:block">
             <VirtualKeyboard onKeyPress={handleVirtualKeyPress} />
           </div>
 
