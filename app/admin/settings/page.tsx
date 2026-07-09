@@ -114,7 +114,7 @@ export default function SettingsPage() {
     mutationFn: (formData: FormData) => {
       return apiPatch<any>("/system-owner/settings/profile", formData);
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       toast.success(data.message || "Profile updated successfully!");
       
       const userCookie = Cookies.get("user");
@@ -122,9 +122,12 @@ export default function SettingsPage() {
         try {
           const u = JSON.parse(userCookie);
           u.name = adminName;
-          if (data.data?.avatar) {
-            u.avatar = data.data.avatar;
-            setProfileUrl(data.data.avatar);
+          
+          const newAvatar = data.data?.avatar || data.user?.avatar || variables.get("avatar");
+          
+          if (newAvatar) {
+            u.avatar = newAvatar;
+            setProfileUrl(newAvatar as string);
           }
           Cookies.set("user", JSON.stringify(u));
           window.dispatchEvent(new Event("profileUpdated"));
