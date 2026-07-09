@@ -10,11 +10,17 @@ import { toast } from "sonner";
 import { Save, Upload, User, Lock, Globe, Image as ImageIcon, Clock, Loader2, Eye, EyeOff } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiGet, apiPatch, apiPost } from "@/lib/apiClient";
+import { getImageUrl } from "@/lib/utils";
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [websiteName, setWebsiteName] = useState("");
   const [supportEmail, setSupportEmail] = useState("");
+  const [profileUrl, setProfileUrl] = useState<string | null>(null);
+  const [profileFile, setProfileFile] = useState<File | null>(null);
+  const [profileError, setProfileError] = useState(false);
+  const [adminName, setAdminName] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
 
   const { data: settingsData, isLoading: isLoadingSettings } = useQuery({
     queryKey: ["settings"],
@@ -25,6 +31,33 @@ export default function SettingsPage() {
     if (settingsData?.data) {
       setWebsiteName(settingsData.data.websiteName || "");
       setSupportEmail(settingsData.data.supportEmail || "");
+      
+      if (settingsData.data.systemOwner) {
+        setAdminName(prev => prev || settingsData.data.systemOwner.name || "");
+        setAdminEmail(prev => prev || settingsData.data.systemOwner.email || "");
+        if (settingsData.data.systemOwner.avatar) {
+          setProfileUrl(prev => prev || settingsData.data.systemOwner.avatar);
+        }
+        
+        // Sync cookie to ensure Navbar reflects API truth
+        let u: any = { role: "SYSTEM_OWNER" };
+        const userCookie = Cookies.get("user");
+        if (userCookie) {
+          try {
+            u = JSON.parse(userCookie);
+          } catch (e) {}
+        }
+        
+        u.name = settingsData.data.systemOwner.name || u.name;
+        u.email = settingsData.data.systemOwner.email || u.email;
+        if (typeof window !== 'undefined' && settingsData.data.systemOwner.avatar) {
+          localStorage.setItem("userAvatar", settingsData.data.systemOwner.avatar);
+        }
+        
+        delete u.avatar; // Ensure cookie doesn't exceed 4KB limit
+        Cookies.set("user", JSON.stringify(u), { path: "/" });
+        window.dispatchEvent(new Event("profileUpdated"));
+      }
     }
   }, [settingsData]);
 
@@ -82,23 +115,7 @@ export default function SettingsPage() {
     changePasswordMutation.mutate();
   };
 
-  const [profileUrl, setProfileUrl] = useState<string | null>(null);
-  const [profileFile, setProfileFile] = useState<File | null>(null);
-  const [profileError, setProfileError] = useState(false);
-  const [adminName, setAdminName] = useState("");
-  const [adminEmail, setAdminEmail] = useState("");
-
-  useEffect(() => {
-    const userCookie = Cookies.get("user");
-    if (userCookie) {
-      try {
-        const u = JSON.parse(userCookie);
-        setAdminName(u.name || "");
-        setAdminEmail(u.email || "");
-        if (u.avatar) setProfileUrl(u.avatar);
-      } catch (e) {}
-    }
-  }, []);
+  // Profile logic moved to the top and merged with API data effect
 
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -117,22 +134,28 @@ export default function SettingsPage() {
     onSuccess: (data, variables) => {
       toast.success(data.message || "Profile updated successfully!");
       
+      let u: any = { role: "SYSTEM_OWNER", email: adminEmail };
       const userCookie = Cookies.get("user");
       if (userCookie) {
         try {
-          const u = JSON.parse(userCookie);
-          u.name = adminName;
-          
-          const newAvatar = data.data?.avatar || data.user?.avatar || variables.get("avatar");
-          
-          if (newAvatar) {
-            u.avatar = newAvatar;
-            setProfileUrl(newAvatar as string);
-          }
-          Cookies.set("user", JSON.stringify(u));
-          window.dispatchEvent(new Event("profileUpdated"));
+          u = JSON.parse(userCookie);
         } catch (e) {}
       }
+      
+      u.name = adminName;
+      
+      const newAvatar = data.data?.avatar || data.user?.avatar || variables.get("avatar");
+      
+      if (newAvatar) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("userAvatar", newAvatar as string);
+        }
+        setProfileUrl(newAvatar as string);
+      }
+      
+      delete u.avatar; // Ensure cookie doesn't exceed 4KB limit
+      Cookies.set("user", JSON.stringify(u), { path: "/" });
+      window.dispatchEvent(new Event("profileUpdated"));
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Failed to update profile");
@@ -291,7 +314,7 @@ export default function SettingsPage() {
                       {profileUrl && !profileError ? (
                         <img 
                           key={profileUrl}
-                          src={profileUrl.startsWith('blob:') || profileUrl.startsWith('http') ? profileUrl : `${(process.env.NEXT_PUBLIC_API_URL || '').replace(/\/api\/?$/, '')}${profileUrl.replace(/\\/g, '/').startsWith('/') ? '' : '/'}${profileUrl.replace(/\\/g, '/')}`} 
+                          src={getImageUrl(profileUrl)} 
                           alt="Profile Preview" 
                           className="w-full h-full object-cover" 
                           onError={() => setProfileError(true)} 

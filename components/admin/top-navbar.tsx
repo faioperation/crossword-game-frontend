@@ -26,7 +26,14 @@ export function TopNavbar() {
       const userCookie = Cookies.get("user");
       if (userCookie) {
         try {
-          setUser(JSON.parse(userCookie));
+          const parsedUser = JSON.parse(userCookie);
+          if (typeof window !== 'undefined') {
+            const localAvatar = localStorage.getItem("userAvatar");
+            if (localAvatar) {
+              parsedUser.avatar = localAvatar;
+            }
+          }
+          setUser(parsedUser);
         } catch (e) {
           console.error("Failed to parse user cookie", e);
         }
@@ -40,8 +47,8 @@ export function TopNavbar() {
   const router = useRouter();
   
   const handleLogout = () => {
-    Cookies.remove("accessToken");
-    Cookies.remove("user");
+    Cookies.remove("accessToken", { path: "/" });
+    Cookies.remove("user", { path: "/" });
     toast.success("Logged out successfully!");
     router.push("/");
     router.refresh();
