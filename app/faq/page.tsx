@@ -7,64 +7,52 @@ import { ChevronDown } from "lucide-react";
 
 const faqs = [
   {
-    q: "How do I play?",
-    a: "Every day we publish a new mini crossword puzzle. Simply click on a square to select a clue, and type your answer using your physical or virtual keyboard. Once the grid is full and correct, you'll be prompted to submit your entry.",
+    q: "What is the Heritage Stackers Daily Mini Crossword?",
+    a: "It is a free daily mini crossword puzzle where users can solve the puzzle and enter for a chance to win the daily prize.",
   },
   {
-    q: "How are winners selected?",
-    a: "Winners are selected through a verifiably random draw from all eligible, correct entries submitted on that specific day.",
+    q: "Do I need to buy anything to enter?",
+    a: "No. No purchase is necessary to enter or win.",
   },
   {
-    q: "Can I play every day?",
-    a: "Yes! A brand new puzzle is released every single day at midnight.",
+    q: "How often can I enter?",
+    a: "Unless otherwise stated, each person may enter once per day.",
   },
   {
-    q: "Do I need an account to play?",
-    a: "No account is required to solve the puzzle, but you will need to provide your name and email address when submitting your completed puzzle so we can contact you if you win.",
+    q: "What can I win?",
+    a: "The daily prize will be shown on the website. Prizes may include silver coins, collectible coins, bullion-related items, or other prizes selected by Heritage Stackers.",
   },
   {
-    q: "Is it free to play?",
-    a: "Yes, Heritage Stackers Daily Mini Crossword is 100% free to play and free to enter our giveaways. No purchase is necessary.",
+    q: "How is the winner chosen?",
+    a: "A winner is selected from eligible entries for the applicable giveaway period.",
   },
   {
-    q: "When are winners announced?",
-    a: "Winners are typically announced the following day. They will appear on the 'Previous Winners' page and will be contacted privately via email.",
+    q: "How will I know if I won?",
+    a: "Winners will be contacted by email. Make sure the email address you submit is accurate.",
   },
   {
-    q: "How do I claim my prize?",
-    a: "If you win, we will send an email to the address you provided during entry. You must reply to that email within 7 days with your shipping details to claim your silver coin.",
+    q: "What happens if I do not respond?",
+    a: "If a winner does not respond within 7 days, Heritage Stackers may select another winner.",
   },
   {
-    q: "What happens if I miss a day?",
-    a: "If you miss a day, you miss that day's giveaway, but you can always return the next day for a new puzzle and a new chance to win!",
+    q: "Can I enter without solving the crossword?",
+    a: "Yes. A no-purchase-necessary alternate entry option is available on the website.",
   },
   {
-    q: "Can I submit multiple entries?",
-    a: "No. To keep things fair for everyone, we strictly limit entries to one per person, per email address, per day. Duplicate entries will be disqualified.",
+    q: "Why do you collect my email address?",
+    a: "We collect your email so we can verify your entry, notify winners, and operate the giveaway. If you choose to receive promotional messages, we may also send updates from Heritage Stackers. You can opt out of marketing emails where applicable.",
   },
   {
-    q: "How is my information used?",
-    a: "Your name and email address are used solely for administering the giveaway, contacting winners, and displaying the winner's first name and last initial on our site. We do not sell your personal data.",
+    q: "Is my information shared?",
+    a: "We do not sell your personal information. Please review our Privacy Policy for more details.",
   },
   {
-    q: "Is there a time limit to solve the puzzle?",
-    a: "No, there is no time limit. A timer is provided for your own personal challenge, but how fast you solve the puzzle does not affect your chances of winning.",
+    q: "Is this connected to Whatnot or Instagram?",
+    a: "No. Unless specifically stated, this giveaway is not sponsored, endorsed, administered by, or associated with Whatnot, Instagram, Meta, Google, Apple, or any other third-party platform.",
   },
   {
-    q: "What if I can't solve the puzzle?",
-    a: "If you're stuck, you can try again later! You must solve the puzzle correctly to submit an entry via the game.",
-  },
-  {
-    q: "Are the silver coins real?",
-    a: "Yes! We give away 100% authentic, high-quality silver pieces. The exact prize may vary day to day but will always be genuine precious metal.",
-  },
-  {
-    q: "I think I found a bug in the game. What should I do?",
-    a: "Please reach out to us via the Contact page with a description of the issue. Our technical team will investigate it right away.",
-  },
-  {
-    q: "Can anyone win?",
-    a: "Giveaways are open to individuals who are 18 years or older, subject to local laws and regulations where prohibited.",
+    q: "Who can I contact with questions?",
+    a: "You can contact Heritage Stackers at giveaway@heritagestackers.com.",
   }
 ];
 
