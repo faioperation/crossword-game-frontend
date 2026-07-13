@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Puzzle, PuzzleCell } from "@/types";
+import { cn } from "@/lib/utils";
 import { CrosswordGrid } from "./CrosswordGrid";
 import { CrosswordClues } from "./CrosswordClues";
 import { WinModal } from "./WinModal";
@@ -353,18 +354,21 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
           </div>
 
           {/* Active Clue Bar (Mobile) */}
-          <div className="lg:hidden sticky top-[65px] sm:top-[88px] z-40 mb-4 bg-white/95 backdrop-blur-sm border border-slate-200 shadow-md rounded-xl p-3 flex items-center justify-between transition-all duration-300">
+          <div className={cn(
+            "lg:hidden sticky top-[65px] sm:top-[129px] z-50 mb-4 bg-white/95 backdrop-blur-md border shadow-lg rounded-xl p-3 flex items-center justify-between transition-all duration-300",
+            activeClue ? "border-[#D4AF37] shadow-[#D4AF37]/20" : "border-slate-200 shadow-sm"
+          )}>
             {activeClue ? (
               <div className="flex items-center gap-3 w-full">
-                <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-[#D4AF37] text-white font-bold text-sm shadow-sm">
+                <div className="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-[#D4AF37] text-slate-900 font-extrabold text-sm shadow-md border-2 border-white">
                   {activeClue.number}{activeClue.direction === 'across' ? 'A' : 'D'}
                 </div>
-                <div className="text-slate-800 text-sm sm:text-base font-semibold">
+                <div className="text-slate-900 text-sm sm:text-base font-bold leading-tight">
                   {activeClue.text}
                 </div>
               </div>
             ) : (
-              <div className="text-slate-500 text-sm italic text-center w-full">
+              <div className="text-slate-500 text-sm font-medium italic text-center w-full py-1">
                 Select a cell to see the clue
               </div>
             )}

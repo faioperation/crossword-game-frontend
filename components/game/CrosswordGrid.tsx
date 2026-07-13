@@ -42,7 +42,7 @@ export function CrosswordGrid({ grid, focusedCell, direction, showErrors, isWon,
   return (
     <div 
       ref={containerRef}
-      className="w-full aspect-square border-4 border-slate-900 bg-slate-900 grid gap-[2px] shadow-xl rounded-sm overflow-hidden"
+      className="w-full aspect-square border-4 border-slate-900 bg-slate-900 grid gap-[2px] shadow-xl rounded-sm overflow-hidden touch-none sm:touch-auto"
       style={{ gridTemplateRows: `repeat(${grid.length}, minmax(0, 1fr))` }}
     >
       {grid.map((row, rowIndex) => (
@@ -65,6 +65,14 @@ export function CrosswordGrid({ grid, focusedCell, direction, showErrors, isWon,
                   isWrong && "bg-red-100",
                   isCorrect && "bg-green-50"
                 )}
+                onClick={(e) => {
+                  if (isWon || cell.isBlack) return;
+                  if (!isFocused) {
+                    onFocus(rowIndex, colIndex);
+                    // Manually focus input on div click if missed
+                    document.getElementById(`cell-${rowIndex}-${colIndex}`)?.focus();
+                  }
+                }}
               >
                 {!cell.isBlack && (
                   <>
@@ -83,7 +91,7 @@ export function CrosswordGrid({ grid, focusedCell, direction, showErrors, isWon,
                       autoCapitalize="characters"
                       spellCheck="false"
                       className={cn(
-                        "w-full h-full text-center text-sm sm:text-base md:text-lg lg:text-xl font-bold uppercase bg-transparent outline-none cursor-pointer caret-transparent",
+                        "w-full h-full text-center text-sm sm:text-base md:text-lg lg:text-xl font-bold uppercase bg-transparent outline-none cursor-pointer caret-transparent touch-manipulation",
                         isWrong ? "text-red-600" : isCorrect ? "text-green-600" : "text-slate-900"
                       )}
                       onChange={(e) => {
@@ -121,13 +129,21 @@ export function CrosswordGrid({ grid, focusedCell, direction, showErrors, isWon,
                           onNavigate(rowIndex, colIndex, 'right');
                         }
                       }}
-                      onClick={() => {
-                        if (!isWon && isFocused) {
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isWon) return;
+                        if (isFocused) {
+                          // Toggle direction only if it was already focused before this tap
+                          if (Date.now() - (window as any)[`focus_time_${rowIndex}_${colIndex}`] > 200) {
+                            onFocus(rowIndex, colIndex);
+                          }
+                        } else {
                           onFocus(rowIndex, colIndex);
                         }
                       }}
                       onFocus={() => {
                         if (!isWon && !isFocused) {
+                          (window as any)[`focus_time_${rowIndex}_${colIndex}`] = Date.now();
                           onFocus(rowIndex, colIndex);
                         }
                       }}
