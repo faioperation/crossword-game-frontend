@@ -42,7 +42,7 @@ export function CrosswordGrid({ grid, focusedCell, direction, showErrors, isWon,
   return (
     <div 
       ref={containerRef}
-      className="w-full aspect-square border-4 border-slate-900 bg-slate-900 grid gap-[2px] shadow-xl rounded-sm overflow-hidden touch-none sm:touch-auto"
+      className="w-full aspect-square border-4 border-slate-900 bg-slate-900 grid gap-[2px] shadow-xl rounded-sm overflow-hidden"
       style={{ gridTemplateRows: `repeat(${grid.length}, minmax(0, 1fr))` }}
     >
       {grid.map((row, rowIndex) => (
