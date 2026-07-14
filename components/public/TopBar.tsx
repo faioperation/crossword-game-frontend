@@ -14,7 +14,7 @@ export function TopBar() {
       <div className="container mx-auto max-w-7xl flex flex-col lg:flex-row justify-center lg:justify-between items-center gap-2 lg:gap-4">
         {/* Left Side */}
         <div className="tracking-wide uppercase text-center lg:text-left">
-          Play and Get Prize Everyday
+     
         </div>
 
         {/* Right Side */}

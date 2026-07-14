@@ -13,15 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Download, CalendarDays, Puzzle, Layers, CheckCircle2, Loader2 } from "lucide-react";
+import { Search, Download, CalendarDays, Puzzle, Layers, CheckCircle2, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/apiClient";
 
@@ -46,7 +39,8 @@ export default function EntriesPage() {
   });
 
   const entries = responseData?.data || [];
-  const stats = responseData?.stats || { todayEntries: 0, puzzleEntries: 0, alternateEntries: 0 };
+
+  const stats = responseData?.stats || { todayEntries: 0, puzzleEntries: 0, alternateEntries: 0, eligibleEntries:0 };
   const meta = responseData?.meta || { page: 1, limit: 10, total: 0, totalPage: 1 };
 
   const handleExport = () => {
@@ -80,7 +74,7 @@ export default function EntriesPage() {
     { title: "Today's Entries", value: stats.todayEntries, icon: CalendarDays, gradient: "from-blue-500 to-indigo-600" },
     { title: "Puzzle Entries", value: stats.puzzleEntries, icon: Puzzle, gradient: "from-emerald-400 to-teal-600" },
     { title: "Alternate Entries", value: stats.alternateEntries, icon: Layers, gradient: "from-purple-500 to-fuchsia-600" },
-    { title: "Eligible Entries", value: "—", icon: CheckCircle2, gradient: "from-amber-400 to-orange-500" }, // Update if backend adds eligible count
+    { title: "Eligible Entries", value: stats.todayEntries, icon: CheckCircle2, gradient: "from-amber-400 to-orange-500" }, // Update if backend adds eligible count
   ];
 
   return (
@@ -118,15 +112,15 @@ export default function EntriesPage() {
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div className="relative w-full sm:max-w-md">
           <Search className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-          <Input 
-            placeholder="Search entries by name or email..." 
+          <Input
+            placeholder="Search entries by name or email..."
             className="pl-10 h-11 text-base bg-slate-50 border-slate-200"
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
           />
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-          <Input 
+          <Input
             type="date"
             value={filterDate}
             onChange={(e) => { setFilterDate(e.target.value); setCurrentPage(1); }}
@@ -146,7 +140,7 @@ export default function EntriesPage() {
             <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
           </div>
         )}
-        
+
         <div className="hidden md:block overflow-x-auto">
           <Table>
             <TableHeader className="bg-slate-50/50">
@@ -182,7 +176,7 @@ export default function EntriesPage() {
             </TableBody>
           </Table>
         </div>
-        
+
         {/* Mobile Cards View */}
         <div className="md:hidden flex flex-col gap-4 p-4">
           {entries.length === 0 && !isLoading ? (
@@ -214,28 +208,28 @@ export default function EntriesPage() {
             ))
           )}
         </div>
-        
+
         {/* Pagination */}
         <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between text-base text-slate-500 gap-4">
           <div>Showing {entries.length} entries (Total: {meta.total})</div>
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={meta.page <= 1}
               className="bg-white h-9 px-4 text-base"
             >
               Previous
             </Button>
-            
+
             <span className="px-3 font-medium text-slate-700">
               Page {meta.page} of {Math.max(1, meta.totalPage)}
             </span>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
+
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setCurrentPage(p => Math.min(meta.totalPage, p + 1))}
               disabled={meta.page >= meta.totalPage}
               className="bg-white h-9 px-4 text-base"
