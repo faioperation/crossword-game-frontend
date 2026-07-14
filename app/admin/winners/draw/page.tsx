@@ -66,7 +66,7 @@ export default function DrawWinnerPage() {
 
   const statCards = [
     { title: "Today's Entries", value: stats.todayEntries, icon: CalendarDays, gradient: "from-blue-500 to-indigo-600" },
-    { title: "Eligible Entries", value: stats.todayEntries, icon: Users, gradient: "from-emerald-400 to-teal-600" },
+    { title: "Eligible Entries", value: stats.eligibleEntries, icon: Users, gradient: "from-emerald-400 to-teal-600" },
     { title: "Current Winner", value: stats.currentWinner, icon: Trophy, gradient: "from-amber-400 to-orange-500" },
     { title: "Last Draw Date", value: stats.lastDrawDate, icon: Clock, gradient: "from-purple-500 to-fuchsia-600" },
   ];
