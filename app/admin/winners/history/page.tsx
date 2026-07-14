@@ -49,17 +49,47 @@ export default function WinnerHistoryPage() {
         page: currentPage.toString(),
         limit: "10",
       });
-      if (searchTerm) params.append("search", searchTerm);
-      if (filterDate) params.append("date", filterDate);
-      if (filterType !== "All") params.append("type", filterType);
-      if (filterSelection !== "All") params.append("selection", filterSelection);
-      if (filterStatus !== "All") params.append("status", filterStatus);
+      // Frontend filtering requested, removing filter params from API call
+      // if (searchTerm) params.append("search", searchTerm);
+      // if (filterDate) params.append("date", filterDate);
+      // if (filterType !== "All") params.append("type", filterType);
+      // if (filterSelection !== "All") params.append("selection", filterSelection);
+      // if (filterStatus !== "All") params.append("status", filterStatus);
 
       return apiGet<any>(`/system-owner/winner-history?${params.toString()}`);
     }
   });
 
-  const historyEntries = responseData?.data || [];
+  let historyEntries = responseData?.data || [];
+
+  // Frontend Filtering
+  if (searchTerm) {
+    historyEntries = historyEntries.filter((entry: any) => 
+      entry.participant?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      entry.participant?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      entry.prize?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
+  if (filterDate) {
+    historyEntries = historyEntries.filter((entry: any) => 
+      entry.date === filterDate || entry.announcedAt?.startsWith(filterDate)
+    );
+  }
+  if (filterType !== "All") {
+    historyEntries = historyEntries.filter((entry: any) => 
+      entry.type?.toLowerCase() === filterType.toLowerCase()
+    );
+  }
+  if (filterSelection !== "All") {
+    historyEntries = historyEntries.filter((entry: any) => 
+      entry.selectionType?.toLowerCase() === filterSelection.toLowerCase()
+    );
+  }
+  if (filterStatus !== "All") {
+    historyEntries = historyEntries.filter((entry: any) => 
+      entry.status?.toLowerCase() === filterStatus.toLowerCase()
+    );
+  }
   const meta = responseData?.meta || { page: 1, limit: 10, total: 0, totalPage: 1 };
 
   const handleExport = () => {

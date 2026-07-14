@@ -52,14 +52,28 @@ export default function DrawWinnerPage() {
         page: currentPage.toString(),
         limit: "10",
       });
-      if (searchTerm) params.append("search", searchTerm);
-      if (filterType !== "All") params.append("type", filterType);
+      // Frontend filtering requested, removing filter params from API call
+      // if (searchTerm) params.append("search", searchTerm);
+      // if (filterType !== "All") params.append("type", filterType);
 
       return apiGet<any>(`/system-owner/draw-winner/eligible-entries?${params.toString()}`);
     }
   });
 
-  const entries = responseData?.data || [];
+  let entries = responseData?.data || [];
+
+  // Frontend Filtering
+  if (searchTerm) {
+    entries = entries.filter((entry: any) => 
+      entry.participant?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      entry.participant?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
+  if (filterType !== "All") {
+    entries = entries.filter((entry: any) => 
+      entry.type?.toLowerCase() === filterType.toLowerCase()
+    );
+  }
   const stats = responseData?.stats || { todayEntries: 0, eligibleEntries: 0, currentWinner: "Pending", lastDrawDate: "N/A" };
   const meta = responseData?.meta || { page: 1, limit: 10, total: 0, totalPage: 1 };
   const winnerDetails = responseData?.winnerDetails;
