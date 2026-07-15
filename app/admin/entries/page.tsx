@@ -22,6 +22,7 @@ export default function EntriesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isExporting, setIsExporting] = useState(false);
 
   const { data: responseData, isLoading } = useQuery({
     queryKey: ["entries", currentPage, searchTerm, filterDate],
@@ -43,17 +44,33 @@ export default function EntriesPage() {
   const stats = responseData?.stats || { todayEntries: 0, puzzleEntries: 0, alternateEntries: 0, eligibleEntries:0 };
   const meta = responseData?.meta || { page: 1, limit: 10, total: 0, totalPage: 1 };
 
-  const handleExport = () => {
-    // Basic export for the current page data
-    const exportData = entries.map((entry: any) => ({
-      id: entry.id,
-      name: entry.participant?.name,
-      email: entry.participant?.email,
-      type: entry.type,
-      date: entry.date,
-      solveTime: entry.solveTime,
-    }));
-    exportTableToCSV(exportData, "entries");
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      const params = new URLSearchParams({
+        page: "1",
+        limit: "10000",
+      });
+      if (searchTerm) params.append("search", searchTerm);
+      if (filterDate) params.append("date", filterDate);
+
+      const res = await apiGet<any>(`/system-owner/entries?${params.toString()}`);
+      const allEntries = res.data || [];
+
+      const exportData = allEntries.map((entry: any) => ({
+        id: entry.id,
+        name: entry.participant?.name,
+        email: entry.participant?.email,
+        type: entry.type,
+        date: entry.date,
+        solveTime: entry.solveTime,
+      }));
+      exportTableToCSV(exportData, "entries");
+    } catch (error) {
+      console.error("Export failed:", error);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const formatId = (id: string) => {
@@ -126,9 +143,9 @@ export default function EntriesPage() {
             onChange={(e) => { setFilterDate(e.target.value); setCurrentPage(1); }}
             className="h-11 text-base bg-slate-50 border-slate-200 w-full sm:w-[160px]"
           />
-          <Button onClick={handleExport} className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white h-11 text-base">
-            <Download className="h-5 w-5 mr-2" />
-            Export
+          <Button onClick={handleExport} disabled={isExporting} className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white h-11 text-base">
+            {isExporting ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <Download className="h-5 w-5 mr-2" />}
+            {isExporting ? "Exporting..." : "Export"}
           </Button>
         </div>
       </div>
