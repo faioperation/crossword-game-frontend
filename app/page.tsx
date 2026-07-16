@@ -176,7 +176,7 @@ export default function Home() {
                     <Gift className="w-3 h-3 sm:w-4 sm:h-4 text-[#D4AF37]" />
                     Today's Featured Prize
                   </div>
-                  <h2 className="text-2xl sm:text-5xl font-extrabold tracking-tight mb-1.5 sm:mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#FFE87C] via-white to-[#D4AF37]">
+                  <h2 className="text-2xl sm:text-5xl font-extrabold tracking-tight mb-1.5 sm:mb-3 pb-1 sm:pb-2 text-transparent bg-clip-text bg-gradient-to-r from-[#FFE87C] via-white to-[#D4AF37]">
                     {prizeInfo.name}
                   </h2>
                   <p className="text-slate-300 font-medium max-w-lg text-xs sm:text-base leading-snug sm:leading-relaxed">
